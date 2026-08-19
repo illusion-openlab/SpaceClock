@@ -29,9 +29,15 @@ import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 
 /**
- * 闹钟到点后覆盖整个体积窗口的提醒卡片（含 NavBar）。两个必做点见类注释里的行内注释：
+ * 闹钟到点后弹出的提醒卡片 + 全屏遮罩。两个必做点见下面的行内注释：
  * 遮罩颜色角色是不透明的，要自己 `copy(alpha=)`；遮罩必须吞掉指针事件，否则点击会穿透点亮
  * 下层导航按钮——工作区已经在别的任务上踩过这个坑。
+ *
+ * **遮罩的实际覆盖范围要说准**：它在**输入**上覆盖整个体积窗口（含 NavBar）——命中测试走
+ * Compose 兄弟节点顺序，本组件是最后一个兄弟。但在**视觉**上它盖不住右侧那块
+ * `backgroundMaterial` 玻璃面板：那是合成器层，不参与 Compose 绘制顺序。既有证据
+ * `task7-3-alarm-card-fired.png` 里左栏被压暗、右侧面板与它整页内容亮着穿在遮罩之上。
+ * 不要把这里写成"覆盖整个体积窗口"就完事——那句话只对输入成立。
  */
 @Composable
 fun AlarmCard(alarm: Alarm, weatherLine: String?, onSnooze: () -> Unit, onDismiss: () -> Unit) {
