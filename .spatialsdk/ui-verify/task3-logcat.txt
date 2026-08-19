@@ -1,0 +1,55 @@
+--------- beginning of main
+08-19 15:36:18.951 28821 28821 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 15:36:18.959 28821 28821 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 15:36:18.959 28821 28821 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 15:36:18.959 28821 28821 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 15:36:18.960 28821 28821 I WorldLayout: row city=北京 h=144 y=141.0
+08-19 15:36:18.960 28821 28821 I WorldLayout: row city=东京 h=144 y=286.0
+08-19 15:36:18.962 28821 28821 I WorldLayout: row city=伦敦 h=144 y=431.0
+08-19 15:36:18.963 28821 28821 I WorldLayout: row city=纽约 h=144 y=576.0
+08-19 15:36:18.963 28821 28821 I WorldLayout: row city=悉尼 h=144 y=721.0
+08-19 15:36:18.964 28821 28821 I WorldLayout: row city=迪拜 h=144 y=866.0
+08-19 15:36:18.965 28821 28821 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 15:40:18.769 29593 29593 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 15:40:18.782 29593 29593 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 15:40:18.783 29593 29593 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 15:40:18.783 29593 29593 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 15:40:18.783 29593 29593 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 15:40:18.783 29593 29593 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 15:40:18.784 29593 29593 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 15:40:18.784 29593 29593 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 15:40:18.785 29593 29593 I WorldLayout: row city=悉尼 h=120 y=625.0
+08-19 15:40:18.785 29593 29593 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 15:40:18.786 29593 29593 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 15:40:18.787 29593 29593 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 15:43:51.894 30216 30216 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 15:43:51.894 30216 30216 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 15:43:51.894 30216 30216 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 15:43:51.894 30216 30216 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=悉尼 h=120 y=625.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 15:43:51.895 30216 30216 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 15:43:51.896 30216 30216 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 15:45:40.865 30573 30573 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 15:45:40.865 30573 30573 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 15:45:40.865 30573 30573 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=悉尼 h=120 y=625.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 15:45:40.865 30573 30573 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 15:45:40.866 30573 30573 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 15:46:11.671 30573 30573 I WorldLayout: row city=悉尼 h=120 y=625.0
