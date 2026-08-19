@@ -79,6 +79,12 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 ## 探针遗留物（Task 4 / Task 8 要清掉）
 
 - `app/src/main/java/tech/illusion/spaceclock/earth/ProbeScene.kt` — Task 4 删除，换成真正的地球场景 + `GeoMath`
+  - 但**保留它的生命周期形状**：`ProbeHandle` 演示了 `SpatialView` 3D 内容该怎么清理——`initial`
+    （异步 suspend）里 `attach(content, root, earth)`，Compose `onDispose`（同步、主线程）里
+    `dispose()`，内部 `content.removeEntity(root)` 后 `Entity.destroy(recursively = true)`。
+    `Entity.destroy` 是 `@MainThread`，只能在 `onDispose` 这类主线程回调里调。句柄还处理了
+    「窗口在 `loadSuspend` 未完成时就被关掉」的竞态（`attach` 发现已 dispose 就立刻销毁）。
+    Task 4 的 `EarthScene` 直接沿用这个形状。
 - `app/src/main/java/tech/illusion/spaceclock/timing/ProbeService.kt` — Task 8 换成真正的计时服务
 - `content/HomeVolume.kt` 当前只挂探针，没有任何 UI —— Task 1 起替换
 - manifest `windowcontainer.defaultsize = 0.4x0.4x0.4`（meters）是探针尺寸，Task 1 换成设计尺寸

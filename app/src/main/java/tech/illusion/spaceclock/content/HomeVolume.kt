@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.pico.spatial.core.ecs.Entity
@@ -12,6 +13,7 @@ import com.pico.spatial.ui.foundation.content.SpatialView
 import com.pico.spatial.ui.foundation.layout.depth
 import com.pico.spatial.ui.platform.LengthUnit
 import com.pico.spatial.ui.platform.LocalPhysicalLengthConverter
+import tech.illusion.spaceclock.earth.ProbeHandle
 import tech.illusion.spaceclock.earth.buildProbe
 import tech.illusion.spaceclock.timing.ProbeService
 
@@ -26,6 +28,14 @@ private const val TAG = "ClockProbe"
 fun HomeVolume() {
     val converter = LocalPhysicalLengthConverter.current
     val context = LocalContext.current
+
+    // 探针建出来的 3D 内容（地球 + 3 个标记点 + 它们的网格/材质）要有主人，否则窗口关掉之后
+    // 这批实体和 12.8MB 的模型资源没人放。`initial` 是异步的，`onDispose` 是同步的，句柄是
+    // 两边唯一的交汇点。
+    val probe = remember { ProbeHandle() }
+    DisposableEffect(probe) {
+        onDispose { probe.dispose() }
+    }
 
     // 前台服务探针。启动写在 Composable 里是因为它只活到探针结束——onDispose 必须停掉它，
     // 否则窗口关掉之后通知和 tick 日志会一直留着。
@@ -48,7 +58,8 @@ fun HomeVolume() {
             try {
                 val root = Entity()
                 content.addEntity(root)
-                buildProbe(root)
+                val earth = buildProbe(root)
+                probe.attach(content, root, earth)
             } catch (t: Throwable) {
                 Log.e(TAG, "probe failed", t)
             }

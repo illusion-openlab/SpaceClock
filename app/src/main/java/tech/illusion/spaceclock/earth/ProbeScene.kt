@@ -1,6 +1,8 @@
 package tech.illusion.spaceclock.earth
 
 import android.util.Log
+import androidx.annotation.MainThread
+import com.pico.spatial.core.container.SpatialViewContent
 import com.pico.spatial.core.ecs.Entity
 import com.pico.spatial.core.ecs.ModelComponent
 import com.pico.spatial.core.ecs.TransformComponent
@@ -61,8 +63,11 @@ private val PROBE_PINS = listOf(
  *
  * 刻意不收 `content` 参数——它只需要 [root]。把 [root] 挂进场景（`content.addEntity(root)`）
  * 是调用方的事，见 `HomeVolume`。
+ *
+ * 返回加载出来的地球实体，交给 [ProbeHandle] 保管——三个标记点是它的子节点，所以销毁它一次
+ * 就把整棵子树带走了。调用方必须把返回值交给 [ProbeHandle.attach]，否则就没有清理路径。
  */
-suspend fun buildProbe(root: Entity) {
+suspend fun buildProbe(root: Entity): Entity {
     val earth = Entity.loadSuspend("asset://models/Earth.usdz")
     root.addChild(earth)
 
@@ -129,6 +134,77 @@ suspend fun buildProbe(root: Entity) {
         val before = position
         position = Vector3(before.x - b.center.x, before.y - b.center.y, before.z - b.center.z)
         Log.i(TAG, "earth recentred from %s to %s".format(before.toString(), position.toString()))
+    }
+
+    return earth
+}
+
+/**
+ * 探针 3D 内容的生命周期句柄：只负责把清理时要用到的东西攥在手里。
+ *
+ * 为什么需要它：`SpatialView` 的 `initial` 是**异步的 suspend lambda**，而 Compose 的
+ * `onDispose` 是**同步的、跑在主线程上**。两边要动同一批实体，就得有个双方都拿得到的容器。
+ * 靠遍历场景去反查实体是不可靠的（别的内容也挂在同一个 view 上），所以这里显式记住。
+ *
+ * Task 4 的 `EarthScene` 沿用同一形状：`initial` 里 [attach]，`onDispose` 里 [dispose]。
+ */
+class ProbeHandle {
+
+    private var content: SpatialViewContent? = null
+    private var root: Entity? = null
+    private var earth: Entity? = null
+    private var disposed = false
+
+    /**
+     * 记下清理所需的三个引用。
+     *
+     * 如果 [dispose] 已经先跑过了（窗口在 `initial` 还挂在 `loadSuspend` 上时就被关掉），
+     * 这里立刻把刚建好的内容销毁掉，否则这批实体就成了没人认领的泄漏。
+     */
+    @MainThread
+    fun attach(content: SpatialViewContent, root: Entity, earth: Entity) {
+        if (disposed) {
+            Log.i(TAG, "probe attach after dispose; tearing down immediately")
+            teardown(content, root, earth)
+            return
+        }
+        this.content = content
+        this.root = root
+        this.earth = earth
+    }
+
+    /**
+     * 把探针建出来的 4 个实体（地球 + 3 个标记点）连同它们持有的网格/材质资源一起放掉，
+     * 并从 `SpatialViewContent` 里摘掉 [root]。幂等，重复调用是空操作。
+     *
+     * 标记点是地球的子节点，`destroy(recursively = true)` 会一起带走；先 `removeEntity`
+     * 再 `destroy`，避免 view 的实体集合里留下已销毁的引用。
+     */
+    @MainThread
+    fun dispose() {
+        if (disposed) return
+        disposed = true
+        val content = this.content
+        val root = this.root
+        val earth = this.earth
+        this.content = null
+        this.root = null
+        this.earth = null
+        if (content == null || root == null) {
+            // initial 还没跑完（或者抛了），没有东西要清。
+            Log.i(TAG, "probe dispose: nothing attached")
+            return
+        }
+        teardown(content, root, earth)
+    }
+
+    private fun teardown(content: SpatialViewContent, root: Entity, earth: Entity?) {
+        content.removeEntity(root)
+        // 三个标记点是 earth 的子节点，`recursively = true` 一次把整棵子树连同网格/材质带走；
+        // 再销毁 root，这样即使 buildProbe 中途失败、earth 为 null，root 也一定被放掉。
+        val earthOk = earth?.destroy(recursively = true)
+        val rootOk = root.destroy(recursively = true)
+        Log.i(TAG, "probe disposed: earth.destroy=$earthOk root.destroy=$rootOk")
     }
 }
 
