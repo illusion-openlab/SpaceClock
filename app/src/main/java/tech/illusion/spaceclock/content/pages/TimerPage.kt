@@ -35,7 +35,9 @@ import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 import tech.illusion.spaceclock.timing.TimerEngine
-import tech.illusion.spaceclock.timing.TimerMode
+
+/** 顶部 `SegmentControl` 的两个标签——纯 UI 选择，与 [TimerEngine] 内部状态无关。 */
+private enum class TimerTab { STOPWATCH, COUNTDOWN }
 
 /**
  * 「计时」页：秒表 + 倒计时共用一个大数字显示区，顶部 `SegmentControl` 切换。
@@ -56,26 +58,26 @@ fun TimerPage(
     onEngineChanged: () -> Unit,
 ) {
     var uiMode by remember {
-        mutableStateOf(if (countdownEngine.isRunning) TimerMode.COUNTDOWN else TimerMode.STOPWATCH)
+        mutableStateOf(if (countdownEngine.isRunning) TimerTab.COUNTDOWN else TimerTab.STOPWATCH)
     }
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {
         SegmentControl(modifier = Modifier.width(160.dp)) {
             SegmentItem(
-                selected = uiMode == TimerMode.STOPWATCH,
-                onClick = { uiMode = TimerMode.STOPWATCH },
+                selected = uiMode == TimerTab.STOPWATCH,
+                onClick = { uiMode = TimerTab.STOPWATCH },
                 title = { Text("秒表", style = PicoTheme.typography.labelMedium) },
             )
             SegmentItem(
-                selected = uiMode == TimerMode.COUNTDOWN,
-                onClick = { uiMode = TimerMode.COUNTDOWN },
+                selected = uiMode == TimerTab.COUNTDOWN,
+                onClick = { uiMode = TimerTab.COUNTDOWN },
                 title = { Text("倒计时", style = PicoTheme.typography.labelMedium) },
             )
         }
         Spacer(Modifier.height(12.dp))
         when (uiMode) {
-            TimerMode.STOPWATCH -> StopwatchSection(stopwatchEngine, onEngineChanged)
-            TimerMode.COUNTDOWN -> CountdownSection(countdownEngine, onEngineChanged)
+            TimerTab.STOPWATCH -> StopwatchSection(stopwatchEngine, onEngineChanged)
+            TimerTab.COUNTDOWN -> CountdownSection(countdownEngine, onEngineChanged)
         }
     }
 }
@@ -109,7 +111,7 @@ private fun StopwatchSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
             tickCount++
             nowMs = SystemClock.elapsedRealtime()
             if (tickCount % 30 == 0) {
-                Log.d("TimerTick", "stopwatch tick count=$tickCount nowMs=$nowMs")
+                Log.i("TimerTick", "stopwatch tick count=$tickCount nowMs=$nowMs")
             }
             delay(16L)
         }
@@ -173,7 +175,7 @@ private fun StopwatchSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
                 ) {
                     Text(
                         "第 $index 段",
-                        style = PicoTheme.typography.bodyMedium,
+                        style = PicoTheme.typography.bodyMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
                         color = PicoTheme.colorScheme.labelSecondary,
                     )
                     Text(
@@ -198,7 +200,7 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
     var running by remember { mutableStateOf(engine.isRunning) }
     var finished by remember { mutableStateOf(false) }
     var nowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
-    // 还没选过时长（engine.mode 还是初始的 STOPWATCH）时，大数字区用这个预览将要设的时长；
+    // 还没选过时长（engine.countdownTotalMs 还是初始的 0）时，大数字区用这个预览将要设的时长；
     // 一旦调过预设/自定义，displayMs 就直接读 engine.remainingMs，这个值不再参与显示。
     var pendingMinutes by remember { mutableStateOf(5) }
 
@@ -218,7 +220,7 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
                 onEngineChanged()
             } else {
                 if (tickCount % 30 == 0) {
-                    Log.d("TimerTick", "countdown tick count=$tickCount nowMs=$nowMs")
+                    Log.i("TimerTick", "countdown tick count=$tickCount nowMs=$nowMs")
                 }
                 delay(16L)
             }
@@ -239,7 +241,9 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
         return
     }
 
-    val hasDuration = engine.mode == TimerMode.COUNTDOWN
+    // countdownTotalMs > 0 就是"这个实例是否配置过倒计时时长"的信号——与 isFinished 用的
+    // 同一个字段，不再靠已删除的 TimerMode.mode 判断。
+    val hasDuration = engine.countdownTotalMs > 0L
     val displayMs = if (hasDuration) engine.remainingMs(nowMs) else pendingMinutes * 60_000L
 
     fun applyMinutes(minutes: Int) {
@@ -262,7 +266,12 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
                             containerColor = PicoTheme.colorScheme.fillTertiary,
                             contentColor = PicoTheme.colorScheme.labelPrimary,
                         ),
-                    ) { Text("$minutes 分", style = PicoTheme.typography.labelMedium) }
+                    ) {
+                        Text(
+                            "$minutes 分",
+                            style = PicoTheme.typography.labelMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(8.dp))

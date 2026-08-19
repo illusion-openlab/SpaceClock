@@ -83,6 +83,25 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 - ~~`earth/ProbeScene.kt`~~ — Task 4 已删除，换成 `earth/EarthScene.kt` + `earth/EarthSpinSystem.kt`
 - ~~`content/HomeVolume.kt`~~ / ~~manifest 0.4x0.4x0.4~~ — Task 1 已替换
 
+## 跨任务契约：Task 8 前台服务必须持有三个独立计时引擎（Task 5 fix round 定稿）
+
+**`ProbeService` 换成真正的计时服务时，必须持有秒表 + 倒计时两个独立 `TimerEngine` 实例，
+外加一个番茄钟引擎——一共三个独立实例，不是一个共享实例。**
+
+背景：Task 5 的 brief 原本给的是单一 `class TimerEngine`（配一个 `mode: TimerMode` 字段）。
+实现时发现这个设计自相矛盾：一个实例只有一对 `accumulatedMs`/`startedAtMs`，装不下"暂停的
+秒表 + 正在跑的倒计时"两份并存状态；而 `setCountdown` 按规格必须停表清零，共享实例会让用户
+在倒计时页调时长时把正在跑/暂停的秒表悄悄清零——这是真实的数据丢失场景，不是代码整洁度偏好。
+Fix round 把这个架构分歧提交人工裁决，**裁决保留两个独立 `TimerEngine` 实例**
+（`stopwatchEngine`/`countdownEngine`，见 `ClockVolume.kt`），并删除了原来试图让单实例兼顾
+两种用途的 `TimerMode` 枚举与 `mode` 字段（已确认没有测试或调用点依赖它们，纯净删除）。
+
+Task 8 把这两个实例从 `ClockVolume` 迁移进前台服务时，必须原样保留"两个独立实例"这个数量，
+再加上番茄钟自己的第三个引擎/状态机——**不要图省事把三者合并回一个带 `mode` 的共享实例**，
+那正是本次裁决否决掉的设计。`TimerEngine` 本身（`start`/`pause`/`reset`/`lap`/`setCountdown`/
+`elapsedMs`/`remainingMs`/`isFinished`，均为纯函数式、`nowMs` 由调用方传入）不需要改动，
+服务只是换个地方持有三份实例。
+
 ## 地球场景结论（Task 4，模拟器 emulator-5554 实测）
 
 证据：`.spatialsdk/ui-verify/task4-logcat.txt`（按标签筛过、已提交）与

@@ -162,7 +162,9 @@ private fun statusLineFor(
 }
 
 /**
- * 秒表和倒计时是两个独立引擎，理论上可以同时在跑；两者都在跑时优先报秒表——两个 UI 步骤
+ * 秒表和倒计时是两个独立 `TimerEngine` 实例（架构裁决保留，见 `AGENTS.md` 跨任务契约），
+ * 理论上可以同时在跑——单引擎 + `mode` 字段的设计下这种情况不存在，这条 tie-break 规则本身
+ * 就是两引擎架构的直接后果，不是凭空加的分支。两者都在跑时优先报秒表——两个 UI 步骤
  * 描述里秒表排在前面，且秒表更常是"顺手掐一下"的临时用途，被状态行盖掉的代价更高。
  */
 private fun timerStatusLine(stopwatchEngine: TimerEngine, countdownEngine: TimerEngine, nowMs: Long): String =
