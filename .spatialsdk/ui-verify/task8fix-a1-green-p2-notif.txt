@@ -1,0 +1,12 @@
+    NotificationRecord(0x0d6e1266: pkg=tech.illusion.spaceclock user=UserHandle{0} id=1001 tag=null importance=2 key=0|tech.illusion.spaceclock|1001|null|10111: Notification(channel=spaceclock_timing shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|NO_CLEAR|FOREGROUND_SERVICE color=0x00000000 vis=PRIVATE))
+      opPkg=tech.illusion.spaceclock
+      icon=Icon(typ=RESOURCE pkg=tech.illusion.spaceclock id=0x0108009b)
+      key=0|tech.illusion.spaceclock|1001|null|10111
+      groupKey=0|tech.illusion.spaceclock|1001|null|10111
+                android.appInfo=ApplicationInfo (ApplicationInfo{25d19a7 tech.illusion.spaceclock})
+      effectiveNotificationChannel=NotificationChannel{mId='spaceclock_timing', mName=计时, mDescription=, mImportance=2, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=content://settings/system/notification_sound, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=true, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedDefaultApp=false, mOriginalImp=2, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0}
+      AppSettings: tech.illusion.spaceclock (10111) importance=DEFAULT userSet=false
+      key='tech.illusion.spaceclock',
+    mKeys [Pair{259209497 0|com.pico.mrservice|1|null|1000}, Pair{259210357 0|com.pico.xr.openxr_runtime|1|null|1000}, Pair{259221247 0|com.picoxr.systemui|1001|null|1000}, Pair{314247571 0|tech.illusion.spaceclock|1001|null|10111}]
+        0|tech.illusion.spaceclock|g:Aggregate_SilentSection
+            0|tech.illusion.spaceclock|1001|null|10111

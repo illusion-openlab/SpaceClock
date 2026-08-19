@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="stats_date">2026-08-19</string>
+    <int name="stats_count" value="6" />
+    <string name="alarms">[{&quot;id&quot;:1787142691084,&quot;h&quot;:20,&quot;m&quot;:43,&quot;on&quot;:true,&quot;rep&quot;:&quot;daily&quot;},{&quot;id&quot;:1787143865512,&quot;h&quot;:20,&quot;m&quot;:58,&quot;on&quot;:true,&quot;rep&quot;:&quot;daily&quot;},{&quot;id&quot;:1787144135566,&quot;h&quot;:7,&quot;m&quot;:0,&quot;on&quot;:true,&quot;rep&quot;:&quot;daily&quot;},{&quot;id&quot;:9000000000001,&quot;h&quot;:0,&quot;m&quot;:20,&quot;on&quot;:true,&quot;rep&quot;:&quot;daily&quot;},{&quot;id&quot;:9000000000002,&quot;h&quot;:0,&quot;m&quot;:20,&quot;on&quot;:true,&quot;rep&quot;:&quot;daily&quot;}]</string>
+    <int name="pomo_work" value="15" />
+    <int name="pomo_long" value="1" />
+    <int name="pomo_short" value="1" />
+    <long name="stats_ms" value="360000" />
+</map>

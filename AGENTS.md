@@ -7,7 +7,10 @@ PICO OS 6 体积窗口时钟摆件。Spatial SDK 6.0.0 / Kotlin 2.1.20 / Spatial
 - WindowContainer id：`SpaceClockVolume`
 - compileSdk / targetSdk / minSdk = 35，AGP 8.13.2
 - 构建：`export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`，然后 `./gradlew :app:assembleDebug`（`JAVA_HOME` / `PICO_HOME` 不跨 Bash 调用持续，每条命令自己 export）
-- 设备验证：`./.spatialsdk/tools/verify-probe.sh emulator-5554`（门禁 B：锁内装机→启动→截图→停应用→释放锁；分析全在锁外）
+- 设备验证：`./.spatialsdk/tools/verify-probe.sh emulator-5554`（门禁 B：锁内装机→启动→截图→停应用→释放锁；分析全在锁外）。
+  按事件取证用 `./.spatialsdk/tools/verify-task8fix.sh`（`LABEL=… SHOT1_MARKER='…'`：等 logcat 标记再拍照，
+  固定 sleep 会拍到空房间；可选 `RELAUNCH=1` 走 force-stop→重开验落盘恢复，`REVOKE=1` 关通知权限，
+  `CLEARALERT=1` 清掉上一轮留下的"未确认提醒"落盘状态）
 
 ## 平台探针结论（Task 0，模拟器 emulator-5554 实测）
 
@@ -168,11 +171,60 @@ tick 照跑（`foreground=true`），无崩溃。权限弹框在体积窗口内�
 阴性/阳性对照：`task8-5-countdown-{red,green}.png`，同一套临时钩子、同一段等待，只差这个修复；
 green 里是「时间到」+「知道了」。
 
+### 到点告警 / 补弹 / 落盘恢复（Task 8 fix round 1，模拟器实测）
+
+证据：`.spatialsdk/ui-verify/task8fix-*`（5 轮，含 A1 的 RED/GREEN 对照）。截图按
+`.gitignore:38` 不入库，只在本地：`task8fix-{a1-red,a1-green,alarm-seam,notif-denied,stopwatch-persist,clean-reinstall}-*.png`。
+
+用户裁决：到点要有系统通知；未确认的提醒落盘、重开**补弹**；暂停的秒表落盘、重开以暂停态恢复。
+
+- **告警频道必须是新频道**。频道 importance 在同一次安装内创建后改不动，常驻通知那条
+  `spaceclock_timing` 必须是 `IMPORTANCE_LOW`（否则每次文案变化都响一声），复用它会让「时间到」
+  永远不响。新频道 `spaceclock_alerts` = `IMPORTANCE_HIGH` + 震动；倒计时 id 2001 / 闹钟 id 2002，
+  **非常驻**（`stopForeground(STOP_FOREGROUND_REMOVE)` 摘不掉它们）。实测
+  `dumpsys notification`：id=2001/2002 `importance=4 channel=spaceclock_alerts category=alarm`，
+  同一份 dump 里 id=1001 仍是 `importance=2`。
+- **post 必须在 `stopSelf()` 之前**：通知一旦 post 就独立于服务生命周期，晚一步服务就没了。
+- **不引入 AlarmManager**（已定案）：倒计时在跑期间 FGS 保证进程存活，到点那一刻服务必定活着；
+  进程被杀/重启的场景由补弹覆盖。精确闹钟在 Android 14+ 要 `USE_EXACT_ALARM`/`SCHEDULE_EXACT_ALARM`，
+  商店政策敏感，为已覆盖的场景引入不划算。
+- **补弹一律不重发通知**：`onCreate` 只回填界面上的提醒。实测 force-stop 后重开
+  `RESURFACE countdownFinished=true`，同一时刻 `dumpsys notification` 里只有 id=1001、没有 2001。
+- **`POST_NOTIFICATIONS` 被拒时通知是被系统整条丢掉的**：`AppSettings: ... importance=NONE`，
+  `NotificationRecord` 一条不剩（连 FGS 那条也不显示），但 `notify()` **不抛异常**
+  （`ALERT-POSTED` / `notify ongoing text=秒表 计时中` 两条都在 `granted=false` 下打出来，
+  `AndroidRuntime:E` 零条），计时/闹钟/补弹全部照常。所以被拒路径的兜底就是补弹。
+- **秒表快照只在"暂停且有内容"时落盘**，正在跑就把磁盘上那份清掉（否则重开会恢复过期数据）。
+  写入走 `tickLoop` 的边沿触发（`onPause`/`onDestroy` 会被 force-stop 绕过）。实测
+  `PERSIST stopwatchSnapshot=StopwatchSnapshot(elapsedMs=9002, laps=[3002, 3000])`（暂停那一刻
+  写一次）→ force-stop → 新进程 `seededStopwatchElapsedMs=9002 seededLaps=2`，界面 `00:09.00` +
+  两行计次、按钮是暂停态。计次要恢复 `lastLapTotalMs = laps.sum()`（不是总用时），否则重开后的
+  第一段会把前面所有段再算一遍——`TimerEngineTest` 用一个总用时≠分段和的快照钉死这条。
+- **「只问一次」必须是持久标记**：`LaunchedEffect(Unit)` 只保证"每次挂载一次"，而重开窗口就会
+  重挂载这棵树（Task 8 的 `task8-logcat.txt` 里同一个 pid 18113 出现过两条请求日志）。标记落在
+  `ClockStore.notificationPermissionAsked`，且在拉起弹框**之前**写盘。实测：被拒的第一段弹框出现
+  一次（`task8fix-notif-denied-1.png`）、force-stop 后的第二段不再弹（`notif_asked=true`）。
+- **`onSnooze` 的语义已上机定论**（原先只有代码审查）：注入两条同一 hh:mm 的闹钟让它们落进同一个
+  轮询窗口 → `ALARM-FIRED ids=[…001, …002] queue=[…001, …002]`；卡片渲染的是
+  `ALARM-CARD-SHOWN id=…001`，服务侧 `SNOOZE-APPLIED snoozedId=…001 until=+10min
+  queueAfter=[…002]`，随后 `ALARM-CARD-SHOWN id=…002` 接上卡片。**被显示的那个才是被 snooze 的
+  那个**，`firingQueue.first()` 与卡片是同一条 `firingAlarm`。
+- **UI 页面状态的播种要把"未确认的到点"算进来**。`TimerPage` 的 uiMode 原先只看
+  `countdownRunning`：倒计时在别的页归零后回到本页，`countdownRunning` 已经是 false，uiMode 落到
+  秒表，而「时间到」只在倒计时分支渲染 → StateFlow 里有 `countdownFinished=true`，界面上**零暴露面**。
+  上机 RED/GREEN 对照（同一套钩子、只差这个表达式）：`task8fix-a1-red-1.png` 是 `00:00.00` 的秒表，
+  `task8fix-a1-green-1.png` 是「时间到」+「知道了」。播种之外还加了一条反应式切换，覆盖"用户正停在
+  秒表标签上"和"本页在服务连上之前就挂载了"这两种播种碰不到的情况。
+
 ### 已知取舍
 
-- 服务只在「有任何计时在跑 或 有启用的闹钟」时驻前台（简报锁定的判据）。**副作用**：倒计时在
-  窗口已关闭的情况下归零，且此时没有别的计时/启用闹钟，服务会 `stopSelf()`，那条未确认的
-  「时间到」随进程一起消失。要不要把 `countdownFinished` 也算进"活跃"，是产品取舍，未擅自改。
+- 服务只在「有任何计时在跑 或 有启用的闹钟」时驻前台（简报锁定的判据）。未确认的「时间到」
+  **不**延长服务寿命——那样会让一条通知因为一个早已到点的提醒无限期挂着。改用「告警通知 + 落盘
+  补弹」覆盖这个场景（见上一节）。
+- **正在跑**的秒表/倒计时被强杀后仍然丢失（只有"暂停的秒表"落盘）。跑着的秒表由 FGS 保证存活，
+  它的快照每 tick 都在变，落盘就变成每秒 5 次写 SharedPreferences。
+- 告警通知的点击意图（`PendingIntent` → `LaunchActivity`）**没有运行时证据**：模拟器上没有可靠的
+  点通知手段。
 - `FGS_AVAILABLE = true` 仍然**只有模拟器证据**，真机确认待办。
 - 模拟器残留状态：3 条闹钟（07:00 / 20:43 / 20:58，Task 7 留下）+ 今日统计 6 个番茄 +
   `pomo_short=1 / pomo_long=1`（Task 6 临时验证留下的时长配置）。都不是 bug。
@@ -299,3 +351,6 @@ tabular），`fontFeatureSettings = "tnum"` 在这套字体上的独立作用没
 - `local.properties` 已被 gitignore，内含 `sdk.dir` / `spatial.tools.dir`，换机需重建。
 - 模拟器是多会话共享的：截图里可能出现别的会话的窗口（本次截图背景那个「视频资源库」面板就是别人的）。
 - 模拟器截图相机固定且视角窄，只能用来验证渲染管线与相对位置，不能用来判断整体摆放好不好看。
+- **`pico-cli capture screenshot` 会给出落后数秒的旧帧**（Task 8 fix round 1 实测：文件写入时间比
+  目标 UI 出现晚 6 秒，画面里仍是它出现之前的状态，`task8fix-alarm-seam-1.png`）。所以不能拿单张
+  截图的时刻去推断当时的 UI 状态；关键时刻要么在日志里留标记，要么把等待放宽到十几秒再拍。

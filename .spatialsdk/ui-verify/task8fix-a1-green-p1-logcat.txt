@@ -1,0 +1,55 @@
+--------- beginning of main
+08-20 00:08:41.244   827  6930 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 00:08:41.244   827  6930 E ActivityManager: java.lang.Throwable
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 00:08:41.244   827  6930 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-20 00:08:41.326   827   827 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-20 00:08:41.330   827  8093 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 00:08:41.330   827  8093 E ActivityManager: java.lang.Throwable
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 00:08:41.330   827  8093 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 00:08:41.340   827   848 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-20 00:08:42.152   827   827 W ActivityManager: type=1400 audit(0.0:155683): avc:  denied  { setsched } for  scontext=u:r:system_server:s0 tcontext=u:r:zygote:s0 tclass=process permissive=0 bug=b/77856826
+08-20 00:08:42.156   827   867 W ActivityManager: Slow operation: 65ms so far, now at startProcess: returned from zygote!
+08-20 00:08:42.156   827   867 W ActivityManager: Slow operation: 66ms so far, now at startProcess: done updating battery stats
+08-20 00:08:42.156   827   867 W ActivityManager: Slow operation: 66ms so far, now at startProcess: building log message
+08-20 00:08:42.156   827   867 W ActivityManager: Slow operation: 66ms so far, now at startProcess: starting to update pids map
+08-20 00:08:42.159   827   867 W ActivityManager: Slow operation: 69ms so far, now at startProcess: done updating pids map
+08-20 00:08:42.265   827  9244 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 00:08:42.330   827  1095 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-20 00:08:45.700   827  9244 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 00:08:46.269  2523  2523 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-20 00:08:46.338  2523  2523 I TimingService: startForeground OK text=闹钟守候中
+08-20 00:08:46.339  2523  2523 I Task8Verify: driveService mode=countdown
+08-20 00:08:46.339  2523  2523 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 00:08:46.368  2523  2523 I ClockVolume: timing service connected
+08-20 00:08:50.341  2523  2523 I TimingService: ALERT-CANCELLED id=2001
+08-20 00:08:50.349  2523  2523 I Task8Verify: countdown armed 20s
+08-20 00:08:51.476  2523  2523 I TimingService: TICK ticks=25 elapsedRealtime=55003051 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-20 00:08:56.514  2523  2523 I TimingService: TICK ticks=50 elapsedRealtime=55008089 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-20 00:09:01.551  2523  2523 I TimingService: TICK ticks=75 elapsedRealtime=55013126 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-20 00:09:06.662  2523  2523 I TimingService: TICK ticks=100 elapsedRealtime=55018237 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-20 00:09:10.488  2523  2523 I TimingService: countdown finished elapsedRealtime=55022063
+08-20 00:09:10.498  2523  2523 I TimingService: ALERT-POSTED id=2001 text=时间到
+08-20 00:09:10.499  2523  2523 I TimingService: PERSIST countdownAlertPending=true
+08-20 00:09:11.716  2523  2523 I TimingService: TICK ticks=125 elapsedRealtime=55023291 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:09:16.738  2523  2523 I TimingService: TICK ticks=150 elapsedRealtime=55028313 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:09:18.277  2523  2523 I Task8Verify: page->TIMER
+08-20 00:09:21.937  2523  2523 I TimingService: TICK ticks=175 elapsedRealtime=55033513 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:09:26.961  2523  2523 I TimingService: TICK ticks=200 elapsedRealtime=55038536 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:09:32.007  2523  2523 I TimingService: TICK ticks=225 elapsedRealtime=55043583 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

@@ -1,0 +1,17 @@
+--------- beginning of main
+08-20 00:26:17.992   827   827 W ActivityManager: type=1400 audit(0.0:159544): avc:  denied  { setsched } for  scontext=u:r:system_server:s0 tcontext=u:r:zygote:s0 tclass=process permissive=0 bug=b/77856826
+--------- beginning of system
+08-20 00:26:18.013   827  1211 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 00:26:18.394   827  1896 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 00:26:18.456  7792  7792 I ClockVolume: POST_NOTIFICATIONS granted=false (拒绝也不影响计时与闹钟)
+08-20 00:26:18.468  7792  7792 I TimingService: startForeground OK text=闹钟守候中
+08-20 00:26:18.468  7792  7792 I Task8Verify: driveService mode=stopwatch
+08-20 00:26:18.468  7792  7792 I Task8Verify: resurfaced stopwatch present; not arming
+08-20 00:26:18.468  7792  7792 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=9002 seededLaps=2
+08-20 00:26:18.472  7792  7792 I ClockVolume: timing service connected
+08-20 00:26:23.276  7792  7792 I TimingService: TICK ticks=25 elapsedRealtime=56054852 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:26:28.279  7792  7792 I TimingService: TICK ticks=50 elapsedRealtime=56059855 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:26:32.458  7792  7792 I Task8Verify: page->TIMER
+08-20 00:26:33.322  7792  7792 I TimingService: TICK ticks=75 elapsedRealtime=56064897 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:26:38.329  7792  7792 I TimingService: TICK ticks=100 elapsedRealtime=56069905 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 00:26:40.206   827   849 W ActivityManager: setHasOverlayUi called on unknown pid: 7792

@@ -1,0 +1,2 @@
+      AppSettings: tech.illusion.spaceclock (10111) importance=NONE userSet=false
+      key='tech.illusion.spaceclock',
