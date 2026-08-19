@@ -35,4 +35,11 @@ class WorldClockTest {
         assertEquals(9, localTimeIn("Asia/Shanghai", at).hour)
         assertEquals(41, localTimeIn("Asia/Shanghai", at).minute)
     }
+
+    @Test
+    fun `quarter hour offsets are not truncated`() {
+        // 尼泊尔 UTC+5:45 vs 北京 UTC+8 -> -2.25h。
+        // 回归钉子：m*10/60 的整除写法会得到 "−2.2h"，一个看起来合理但错误的值。
+        assertEquals("−2.25h", offsetLabel("Asia/Kathmandu", "Asia/Shanghai", at))
+    }
 }

@@ -22,6 +22,9 @@ fun offsetLabel(cityZone: String, localZone: String, at: Instant): String {
     val abs = kotlin.math.abs(diff)
     val h = abs / 60
     val m = abs % 60
-    val body = if (m == 0) "$h" else "$h.${(m * 10 / 60)}"
+    // 用 m*100/60 再去尾零，而不是 m*10/60：m*10/60 整数除会把 45 分截成 7（"5.7h"，
+    // 应为 "5.75h"）而不报错——一个看起来合理但错误的值。m*100/60 再 trimEnd('0') 既能
+    // 保留半小时时区的既有输出（30 -> 50 -> "5"），也能补上 15/45 分钟时区。
+    val body = if (m == 0) "$h" else "$h." + (m * 100 / 60).toString().trimEnd('0')
     return "$sign${body}h"
 }
