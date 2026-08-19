@@ -15,13 +15,17 @@ import com.pico.spatial.ui.design.HorizontalDivider
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
+import tech.illusion.spaceclock.weather.WEATHER_FRESH_WINDOW_MS
 import tech.illusion.spaceclock.weather.WeatherSnapshot
 
 /**
  * 时钟主页的右侧玻璃面板内容：城市名 + 天气快照。
  *
  * `weather == null` 时天气区显示 `—` 占位——设计的错误处理原则是「天气拉取失败不能拖垮时钟」，
- * 所以这里绝不空白也绝不崩，Task 9 接入 `WeatherRepository` 之前恒传 `null`。
+ * 所以这里绝不空白也绝不崩。Task 9 接入 `WeatherRepository` 后，`weather` 既可能是刚拉到的新鲜
+ * 数据，也可能是 `WeatherRepository.snapshot()` 在网络失败时退回的过期缓存——过期缓存仍然显示
+ * 数字（不能因为数据旧就假装没有），只是额外加一行「更新于 X 分钟前」，判据与仓库共用
+ * [WEATHER_FRESH_WINDOW_MS]，不在这里另猜一个 30 分钟。
  */
 @Composable
 fun HomePage(weather: WeatherSnapshot?, cityName: String) {
@@ -29,6 +33,16 @@ fun HomePage(weather: WeatherSnapshot?, cityName: String) {
     val typo = PicoTheme.typography
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("$cityName · 今日天气", style = typo.labelSmall, color = scheme.labelSecondary)
+        weather?.let {
+            val ageMs = System.currentTimeMillis() - it.fetchedAtEpochSec * 1000
+            if (ageMs >= WEATHER_FRESH_WINDOW_MS) {
+                Text(
+                    "更新于 ${ageMs / 60_000} 分钟前",
+                    style = typo.labelSmall,
+                    color = scheme.labelTertiary,
+                )
+            }
+        }
         Spacer(Modifier.height(12.dp))
         Text(
             text = weather?.let { "${it.tempC}°" } ?: "—",

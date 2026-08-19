@@ -43,6 +43,9 @@ import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
 import tech.illusion.spaceclock.time.localTimeIn
 import tech.illusion.spaceclock.time.offsetLabel
+import tech.illusion.spaceclock.weather.WeatherSnapshot
+import tech.illusion.spaceclock.weather.WmoCodes
+import tech.illusion.spaceclock.weather.icon
 import java.time.Instant
 import java.time.ZoneId
 
@@ -66,6 +69,7 @@ fun WorldPage(
     cities: List<City>,
     homeCityName: String,
     focusedCityName: String?,
+    weatherByCity: Map<String, WeatherSnapshot?>,
     onAddCity: (City) -> Unit,
     onSetHome: (City) -> Unit,
     onSelectCity: (City) -> Unit,
@@ -131,6 +135,7 @@ fun WorldPage(
                             localZoneId = localZoneId,
                             isHome = city.name == homeCityName,
                             isPinned = city.name == focusedCityName,
+                            weather = weatherByCity[city.name],
                             onSelect = { onSelectCity(city) },
                             onSetHome = { onSetHome(city) },
                             rowModifier = Modifier.onGloballyPositioned { c ->
@@ -175,6 +180,7 @@ private fun WorldClockRow(
     localZoneId: String,
     isHome: Boolean,
     isPinned: Boolean,
+    weather: WeatherSnapshot?,
     onSelect: () -> Unit,
     onSetHome: () -> Unit,
     rowModifier: Modifier = Modifier,
@@ -236,8 +242,13 @@ private fun WorldClockRow(
                         style = typo.bodyLarge.copy(fontFeatureSettings = TABULAR_FIGURES),
                         color = scheme.labelPrimary,
                     )
-                    // 天气位：Task 9 前恒为占位——缺数据源不能让行空白或崩溃（Task 2 定的原则）。
-                    Text("—", style = typo.bodySmall, color = scheme.labelTertiary)
+                    // 天气位：weather 为 null（拉取失败且无缓存）时退回占位，不空白不崩溃
+                    // （Task 2 定的原则，Task 9 起真正接入 WeatherRepository）。
+                    Text(
+                        text = weather?.let { "${WmoCodes.describe(it.wmoCode).kind.icon()} ${it.tempC}°" } ?: "—",
+                        style = typo.bodySmall.copy(fontFeatureSettings = TABULAR_FIGURES),
+                        color = scheme.labelTertiary,
+                    )
                     if (isHome) {
                         Text("本地", style = typo.labelSmall, color = scheme.interaction)
                     } else {

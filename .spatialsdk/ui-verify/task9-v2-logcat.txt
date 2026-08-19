@@ -1,0 +1,72 @@
+--------- beginning of main
+08-20 01:04:57.983 14462 14462 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 01:04:58.115 14462 14462 I TimingService: startForeground OK text=闹钟守候中
+08-20 01:04:58.116 14462 14462 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 01:04:59.385 14462 14523 I WeatherRepository: HTTP-STATUS city=北京 code=200
+08-20 01:04:59.389 14462 14523 I WeatherRepository: HTTP-BODY city=北京 temp=25.7 code=1 high=31.6 low=23.6 fetchedAtEpochSec=1787159099
+08-20 01:04:59.391 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=北京 source=network temp=26 fetchedAtEpochSec=1787159099
+08-20 01:04:59.877 14462 14523 I WeatherRepository: HTTP-STATUS city=东京 code=200
+08-20 01:04:59.880 14462 14523 I WeatherRepository: HTTP-BODY city=东京 temp=24.7 code=2 high=30.7 low=24.1 fetchedAtEpochSec=1787159099
+08-20 01:04:59.880 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=东京 source=network temp=25 fetchedAtEpochSec=1787159099
+08-20 01:05:00.355 14462 14523 I WeatherRepository: HTTP-STATUS city=伦敦 code=200
+08-20 01:05:00.357 14462 14523 I WeatherRepository: HTTP-BODY city=伦敦 temp=24.6 code=2 high=24.6 low=16.8 fetchedAtEpochSec=1787159100
+08-20 01:05:00.357 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=伦敦 source=network temp=25 fetchedAtEpochSec=1787159100
+08-20 01:05:00.782 14462 14523 I WeatherRepository: HTTP-STATUS city=纽约 code=200
+08-20 01:05:00.785 14462 14523 I WeatherRepository: HTTP-BODY city=纽约 temp=30.2 code=0 high=31.7 low=20.7 fetchedAtEpochSec=1787159100
+08-20 01:05:00.786 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=纽约 source=network temp=30 fetchedAtEpochSec=1787159100
+08-20 01:05:03.995 14462 14462 I TimingService: TICK ticks=25 elapsedRealtime=58375570 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:09.025 14462 14462 I TimingService: TICK ticks=50 elapsedRealtime=58380600 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:10.746 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:10.746 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:14.047 14462 14462 I TimingService: TICK ticks=75 elapsedRealtime=58385623 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:17.690 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:17.690 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:19.101 14462 14462 I TimingService: TICK ticks=100 elapsedRealtime=58390677 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:21.713 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:21.713 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:24.127 14462 14462 I TimingService: TICK ticks=125 elapsedRealtime=58395703 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:25.707 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:25.707 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:29.141 14462 14462 I TimingService: TICK ticks=150 elapsedRealtime=58400717 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:29.688 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:29.688 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:33.686 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:34.157 14462 14462 I TimingService: TICK ticks=175 elapsedRealtime=58405733 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:07:53.787 15229 15229 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 01:07:53.795 15229 15229 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:07:53.796 15229 15229 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:07:53.796 15229 15229 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 01:07:53.796 15229 15229 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 01:07:53.797 15229 15229 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 01:07:53.797 15229 15229 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 01:07:53.797 15229 15229 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 01:07:53.797 15229 15229 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 01:07:53.881 15229 15292 I WeatherRepository: WEATHER-SNAPSHOT city=北京 source=cache-fresh temp=26 fetchedAtEpochSec=1787159099
+08-20 01:07:53.905 15229 15229 I TimingService: startForeground OK text=闹钟守候中
+08-20 01:07:53.906 15229 15229 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 01:07:54.087 15229 15292 I WeatherRepository: WEATHER-SNAPSHOT city=东京 source=cache-fresh temp=25 fetchedAtEpochSec=1787159099
+08-20 01:07:54.291 15229 15292 I WeatherRepository: WEATHER-SNAPSHOT city=伦敦 source=cache-fresh temp=25 fetchedAtEpochSec=1787159100
+08-20 01:07:54.494 15229 15292 I WeatherRepository: WEATHER-SNAPSHOT city=纽约 source=cache-fresh temp=30 fetchedAtEpochSec=1787159100
+08-20 01:07:58.864 15229 15229 I TimingService: TICK ticks=25 elapsedRealtime=58550440 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:03.925 15229 15229 I TimingService: TICK ticks=50 elapsedRealtime=58555500 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:08.954 15229 15229 I TimingService: TICK ticks=75 elapsedRealtime=58560529 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:11.743 15229 15229 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:08:11.744 15229 15229 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:08:13.974 15229 15229 I TimingService: TICK ticks=100 elapsedRealtime=58565549 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:18.999 15229 15229 I TimingService: TICK ticks=125 elapsedRealtime=58570575 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:24.021 15229 15229 I TimingService: TICK ticks=150 elapsedRealtime=58575597 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:29.049 15229 15229 I TimingService: TICK ticks=175 elapsedRealtime=58580624 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:33.693 15229 15229 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:08:33.693 15229 15229 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:08:34.100 15229 15229 I TimingService: TICK ticks=200 elapsedRealtime=58585675 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:39.121 15229 15229 I TimingService: TICK ticks=225 elapsedRealtime=58590697 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:44.148 15229 15229 I TimingService: TICK ticks=250 elapsedRealtime=58595724 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:08:49.176 15229 15229 I TimingService: TICK ticks=275 elapsedRealtime=58600752 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

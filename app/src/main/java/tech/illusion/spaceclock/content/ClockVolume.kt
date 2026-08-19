@@ -48,6 +48,11 @@ import tech.illusion.spaceclock.timing.Phase
 import tech.illusion.spaceclock.timing.PomodoroState
 import tech.illusion.spaceclock.timing.TimerState
 import tech.illusion.spaceclock.timing.TimingService
+import tech.illusion.spaceclock.weather.WeatherRepository
+import tech.illusion.spaceclock.weather.WeatherSnapshot
+import tech.illusion.spaceclock.weather.WmoCodes
+import tech.illusion.spaceclock.weather.alarmLine
+import tech.illusion.spaceclock.weather.icon
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -83,6 +88,21 @@ fun ClockVolume() {
     }
     // 点选中的城市：驱动地球把它转到正面，同时给列表行做高亮。
     var focusedCity by remember { mutableStateOf<City?>(null) }
+
+    // 天气（Task 9）：仓库只在这一层持有一份实例（和 ClockStore 同样的"持久化/外部 IO 入口集中"
+    // 理由），四个消费点（HomePage/WorldPage/AlarmCard/状态副行）都读同一份 weatherByCity 快照，
+    // 不各自发起请求。本地城市保证已经在 selectedCities 里——"设为本地"只出现在已经显示的行上
+    // （WorldClockRow 的 onSetHome），所以不需要为 homeCityName 单独发一次额外请求。
+    val weatherRepository = remember { WeatherRepository(context) }
+    var weatherByCity by remember { mutableStateOf<Map<String, WeatherSnapshot?>>(emptyMap()) }
+    LaunchedEffect(selectedCities) {
+        while (true) {
+            weatherByCity = weatherRepository.snapshotAll(selectedCities)
+            // 仓库内部按 WEATHER_FRESH_WINDOW_MS（30 分钟）做新鲜度判断，命中缓存时不会真的发
+            // 网络请求——这里的刷新间隔只是"隔多久检查一次是否该刷新"，不是"隔多久打一次网络"。
+            delay(5 * 60_000L)
+        }
+    }
     // 墙上时间显示用 ZonedDateTime.now()（Global Constraints）：时区在取值源头就显式化，
     // 避免 Task 3 世界时钟 / Task 9 状态行继承隐式默认时区的写法。LeftColumn 的参数类型仍是
     // LocalTime——只换取值来源，不换接口，行为不变（两者都经系统默认时区，精确到秒一致）。
@@ -166,7 +186,7 @@ fun ClockVolume() {
         Row(Modifier.fillMaxSize().padding(20.dp)) {
             LeftColumn(
                 now,
-                statusLineFor(page, today, alarms, timerState, pomodoroState),
+                statusLineFor(page, today, alarms, timerState, pomodoroState, homeCityName, weatherByCity[homeCityName]),
                 Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
                     Log.i("ClockLayout", "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
                 },
@@ -181,13 +201,15 @@ fun ClockVolume() {
                     }
             ) {
                 when (page) {
-                    // weather 恒传 null——Task 9 接入 WeatherRepository 前 UI 只看到占位。
-                    // cityName 同理是占位值，Task 9 换成真实定位结果，签名不变。
-                    ClockPage.HOME -> HomePage(weather = null, cityName = "本地")
+                    ClockPage.HOME -> HomePage(
+                        weather = weatherByCity[homeCityName],
+                        cityName = homeCityName,
+                    )
                     ClockPage.WORLD -> WorldPage(
                         cities = selectedCities,
                         homeCityName = homeCityName,
                         focusedCityName = focusedCity?.name,
+                        weatherByCity = weatherByCity,
                         onAddCity = { city ->
                             val updated = selectedCityNames + city.name
                             store.selectedCityNames = updated
@@ -226,7 +248,11 @@ fun ClockVolume() {
         firingAlarm?.let { alarm ->
             AlarmCard(
                 alarm = alarm,
-                weatherLine = null, // Task 9 前恒为 null（任务简报歧义决议 2）
+                // 提醒卡片显示"本地城市"的天气——闹钟到点关心的是用户自己在哪儿，跟世界时钟
+                // 列表里其他城市的天气无关。weatherByCity[homeCityName] 为 null（拉取失败且无
+                // 缓存）时 alarmLine() 整个调不到，AlarmCard 内部 weatherLine?.let{} 会让那一行
+                // 直接不显示，不留空字符串占位。
+                weatherLine = weatherByCity[homeCityName]?.alarmLine(),
                 onSnooze = { service?.snoozeFiringAlarm() },
                 onDismiss = { service?.dismissFiringAlarm() },
             )
@@ -236,7 +262,7 @@ fun ClockVolume() {
 
 /**
  * 状态副行：设计文档 §3 的表。占位会被逐任务替换成真实数据——
- * HOME→Task 2、WORLD→Task 9（仍是占位）、ALARM→Task 7、TIMER→Task 5、FOCUS→Task 6。
+ * HOME→Task 2、WORLD→Task 9、ALARM→Task 7、TIMER→Task 5、FOCUS→Task 6。
  * 计时/番茄钟两行的数据源在 Task 8 从引擎实例换成了服务发布的状态快照，文案口径不变。
  */
 private fun statusLineFor(
@@ -245,13 +271,26 @@ private fun statusLineFor(
     alarms: List<Alarm>,
     timerState: TimerState,
     pomodoroState: PomodoroState,
+    homeCityName: String,
+    homeWeather: WeatherSnapshot?,
 ): String = when (page) {
     ClockPage.HOME -> homeStatusLine(today)
-    ClockPage.WORLD -> "—"
+    ClockPage.WORLD -> worldStatusLine(homeCityName, homeWeather)
     ClockPage.ALARM -> alarmStatusLine(alarms)
     ClockPage.TIMER -> timerStatusLine(timerState)
     ClockPage.FOCUS -> focusStatusLine(pomodoroState)
 }
+
+/**
+ * WORLD 页状态副行：本地城市 + 天气一句话，「北京 · ☀ 26°」（设计文档 §3 状态副行表，
+ * brief Step 5 item 4 逐字给定的格式）。无天气数据（拉取失败且无缓存）时**退回城市名本身**，
+ * 不是 "—" 占位——brief 原文写的是「无数据时退回『北京』」，城市名本身永远有效，不需要占位符。
+ */
+private fun worldStatusLine(homeCityName: String, homeWeather: WeatherSnapshot?): String =
+    homeWeather?.let {
+        val icon = WmoCodes.describe(it.wmoCode).kind.icon()
+        "$homeCityName · $icon ${it.tempC}°"
+    } ?: homeCityName
 
 /** 「下个闹钟 07:00」；全部关闭或列表为空时显示「无闹钟」。 */
 private fun alarmStatusLine(alarms: List<Alarm>): String {

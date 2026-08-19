@@ -1,0 +1,83 @@
+--------- beginning of main
+08-20 01:04:53.422   827   909 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 01:04:53.422   827   909 E ActivityManager: java.lang.Throwable
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 01:04:53.422   827   909 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 01:04:53.483   827   911 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 01:04:53.483   827   911 E ActivityManager: java.lang.Throwable
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 01:04:53.483   827   911 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-20 01:04:53.541   827   827 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-20 01:04:53.561   827   848 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-20 01:04:54.524   827  1095 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-20 01:04:54.791   827   867 W ActivityManager: Slow operation: 120ms so far, now at startProcess: returned from zygote!
+08-20 01:04:54.791   827   867 W ActivityManager: Slow operation: 121ms so far, now at startProcess: done updating battery stats
+08-20 01:04:54.791   827   867 W ActivityManager: Slow operation: 121ms so far, now at startProcess: building log message
+08-20 01:04:54.792   827   867 W ActivityManager: Slow operation: 121ms so far, now at startProcess: starting to update pids map
+08-20 01:04:54.792   827   867 W ActivityManager: Slow operation: 122ms so far, now at startProcess: done updating pids map
+08-20 01:04:54.979   827  4746 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 01:04:57.586   827  4746 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 01:04:57.983 14462 14462 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:04:57.992 14462 14462 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 01:04:57.993 14462 14462 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 01:04:58.071 14462 14462 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-20 01:04:58.115 14462 14462 I TimingService: startForeground OK text=闹钟守候中
+08-20 01:04:58.116 14462 14462 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 01:04:58.166 14462 14462 I ClockVolume: timing service connected
+08-20 01:04:59.385 14462 14523 I WeatherRepository: HTTP-STATUS city=北京 code=200
+08-20 01:04:59.389 14462 14523 I WeatherRepository: HTTP-BODY city=北京 temp=25.7 code=1 high=31.6 low=23.6 fetchedAtEpochSec=1787159099
+08-20 01:04:59.391 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=北京 source=network temp=26 fetchedAtEpochSec=1787159099
+08-20 01:04:59.877 14462 14523 I WeatherRepository: HTTP-STATUS city=东京 code=200
+08-20 01:04:59.880 14462 14523 I WeatherRepository: HTTP-BODY city=东京 temp=24.7 code=2 high=30.7 low=24.1 fetchedAtEpochSec=1787159099
+08-20 01:04:59.880 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=东京 source=network temp=25 fetchedAtEpochSec=1787159099
+08-20 01:05:00.355 14462 14523 I WeatherRepository: HTTP-STATUS city=伦敦 code=200
+08-20 01:05:00.357 14462 14523 I WeatherRepository: HTTP-BODY city=伦敦 temp=24.6 code=2 high=24.6 low=16.8 fetchedAtEpochSec=1787159100
+08-20 01:05:00.357 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=伦敦 source=network temp=25 fetchedAtEpochSec=1787159100
+08-20 01:05:00.782 14462 14523 I WeatherRepository: HTTP-STATUS city=纽约 code=200
+08-20 01:05:00.785 14462 14523 I WeatherRepository: HTTP-BODY city=纽约 temp=30.2 code=0 high=31.7 low=20.7 fetchedAtEpochSec=1787159100
+08-20 01:05:00.786 14462 14523 I WeatherRepository: WEATHER-SNAPSHOT city=纽约 source=network temp=30 fetchedAtEpochSec=1787159100
+08-20 01:05:03.995 14462 14462 I TimingService: TICK ticks=25 elapsedRealtime=58375570 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:09.025 14462 14462 I TimingService: TICK ticks=50 elapsedRealtime=58380600 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:09.766 14462 14462 I NavBar  : tap reached page=WORLD
+08-20 01:05:10.746 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:10.746 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:14.047 14462 14462 I TimingService: TICK ticks=75 elapsedRealtime=58385623 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:17.189 14462 14462 I NavBar  : tap reached page=HOME
+08-20 01:05:17.690 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:17.690 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:19.101 14462 14462 I TimingService: TICK ticks=100 elapsedRealtime=58390677 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:21.061 14462 14462 I NavBar  : tap reached page=WORLD
+08-20 01:05:21.713 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:21.713 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:24.127 14462 14462 I TimingService: TICK ticks=125 elapsedRealtime=58395703 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:24.956 14462 14462 I NavBar  : tap reached page=ALARM
+08-20 01:05:25.707 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:25.707 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:28.841 14462 14462 I NavBar  : tap reached page=TIMER
+08-20 01:05:29.141 14462 14462 I TimingService: TICK ticks=150 elapsedRealtime=58400717 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 01:05:29.688 14462 14462 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 01:05:29.688 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:32.731 14462 14462 I NavBar  : tap reached page=FOCUS
+08-20 01:05:33.686 14462 14462 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 01:05:34.157 14462 14462 I TimingService: TICK ticks=175 elapsedRealtime=58405733 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
