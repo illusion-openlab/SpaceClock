@@ -1,7 +1,6 @@
 package tech.illusion.spaceclock.content.pages
 
 import android.os.SystemClock
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,15 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.ButtonDefaults
+import com.pico.spatial.ui.design.CircularProgressDefaults
 import com.pico.spatial.ui.design.Link
 import com.pico.spatial.ui.design.PicoTheme
+import com.pico.spatial.ui.design.ProgressIndicatorEdgeStyle
+import com.pico.spatial.ui.design.SymbolicCircularProgressIndicator
 import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
@@ -242,11 +239,20 @@ private fun DurationRow(
 }
 
 /**
- * 环形进度：SpatialUI 没有环形进度组件，标准 Compose `Canvas` + `drawArc` 自绘是合理选择，
- * 不是绕开设计系统的权宜之计（任务简报歧义决议 5）。
+ * 环形进度：用 SpatialUI 内建的 `SymbolicCircularProgressIndicator`（`design-6.0.0.aar` 反编译
+ * 确认存在，`pico-spatial-knowledge` MCP 的 `spatial-ui_progressindicator.md` 给出了完整、
+ * 具名的参数文档），不再自绘 `Canvas`/`drawArc`。
+ *
+ * 原简报"SpatialUI 没有环形进度组件，自绘是合理的"这一前提是错的，人工已裁决改用内建组件——
+ * 三个诉求全部覆盖：`colors`（`indicatorColor`/`backgroundColor`，对应亮度）、`strokeWidth`
+ * （对应环粗细）、`progressSymbol`（居中的 `@Composable` 内容槽，装剩余时间数字）。
  *
  * 工作/休息不靠色相区分（深空蓝配色下不可行）：工作用主题强调色 + 粗环，休息用次要标签色
- * + 细环，两个维度都在变化，不依赖任何单一色觉线索；上面调用处还叠了文字阶段标签兜底。
+ * + 细环，两个维度都在变化，不依赖任何单一色觉线索；调用处还叠了文字阶段标签兜底。
+ *
+ * `progress` 的 0…1 映射和填充方向与被替换的旧实现保持一致：0 = 阶段刚开始，1 = 阶段结束，
+ * 从正上方顺时针填满——这是原 `drawArc(startAngle = -90f, sweepAngle = 360f * progress)`
+ * 的语义，替换后必须上机截图核对，不能只凭文档假设方向一致。
  */
 @Composable
 private fun PomodoroRing(phase: Phase, remainingMs: Long, totalMs: Long) {
@@ -261,37 +267,23 @@ private fun PomodoroRing(phase: Phase, remainingMs: Long, totalMs: Long) {
     val trackColor = scheme.fillTertiary
     val strokeWidthDp = if (isWork) 14.dp else 8.dp
 
-    Box(Modifier.size(200.dp), contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) {
-            val strokeWidth = strokeWidthDp.toPx()
-            val diameter = size.minDimension - strokeWidth
-            val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
-            val arcSize = Size(diameter, diameter)
-            drawArc(
-                color = trackColor,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(strokeWidth, cap = StrokeCap.Round),
+    SymbolicCircularProgressIndicator(
+        progress = { progress },
+        progressSize = CircularProgressDefaults.circleProgressSize(size = 200.dp),
+        strokeWidth = strokeWidthDp,
+        edgeStyle = ProgressIndicatorEdgeStyle.RoundCorner,
+        colors = CircularProgressDefaults.circleProgressColors(
+            backgroundColor = trackColor,
+            indicatorColor = ringColor,
+        ),
+        progressSymbol = {
+            Text(
+                formatMinSec(remainingMs),
+                style = PicoTheme.typography.displayMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
+                color = scheme.labelPrimary,
             )
-            drawArc(
-                color = ringColor,
-                startAngle = -90f,
-                sweepAngle = 360f * progress,
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(strokeWidth, cap = StrokeCap.Round),
-            )
-        }
-        Text(
-            formatMinSec(remainingMs),
-            style = PicoTheme.typography.displayMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
-            color = scheme.labelPrimary,
-        )
-    }
+        },
+    )
 }
 
 /** 阶段总时长（毫秒）。和引擎内部的 `phaseLenMs` 同一份换算公式，但引擎没有把它公开——

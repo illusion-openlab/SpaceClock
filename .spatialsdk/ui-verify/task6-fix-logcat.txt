@@ -1,0 +1,35 @@
+# Task 6 fix round — filtered logcat evidence for the disabled-settings tap check
+# Tag: FocusVerify (temporary instrumentation, fully reverted before commit — see
+# task-6-report.md fix-round appendix for the revert diff and grep confirmation).
+# Device: emulator-5554. All lines below are literal `adb logcat -d | grep FocusVerify` output.
+
+## Pass 1 — running build (workMin=shortMin=longMin=1, auto-started), first launch
+08-19 19:52:50.023 16523 16523 I FocusVerify: button rect label=工作时长 minutes=15 enabled=true x=715.0 y=651.0 w=162 h=96
+08-19 19:52:50.075 16523 16523 I FocusVerify: button rect label=工作时长 minutes=15 enabled=false x=715.0 y=651.0 w=162 h=96
+
+## Negative-control tap at the captured rect's center (796, 699), same pass, engine running
+## (disabled state). adb logcat -d | grep FocusVerify -> EMPTY (no onClick fired line).
+(no output)
+
+## Pass 2 — positive-control build (auto-start intentionally disabled, engine never runs,
+## button stays enabled=true). Fresh install + launch.
+08-19 19:54:16.394 16958 16958 I FocusVerify: button rect label=工作时长 minutes=15 enabled=true x=715.0 y=651.0 w=162 h=96
+
+## Tap at the SAME coordinates (796, 699) as the negative-control tap above:
+08-19 19:54:24.659 16958 16958 I FocusVerify: onClick fired label=工作时长 minutes=15 enabled=true
+
+## Pass 3 — restored auto-start build (final ring-screenshot pass), fresh install + launch
+08-19 19:54:56.228 17229 17229 I FocusVerify: button rect label=工作时长 minutes=15 enabled=true x=715.0 y=651.0 w=162 h=96
+08-19 19:54:56.287 17229 17229 I FocusVerify: button rect label=工作时长 minutes=15 enabled=false x=715.0 y=651.0 w=162 h=96
+
+## Negative-control tap again at (796, 699), engine running (disabled state):
+## adb logcat -d | grep FocusVerify -> EMPTY (no onClick fired line).
+(no output)
+
+# Reading: identical screen coordinates, identical Button instance. When enabled=true
+# (pass 2) the tap reliably produces "onClick fired". When enabled=false (passes 1 and 3,
+# while a pomodoro phase is running) the same tap produces zero output, twice. This rules
+# out "adb tap just doesn't land on this device" as the explanation for the negative
+# result — the positive control on the same coordinates in the same build lineage shows the
+# tap does land — and confirms enabled=false actually blocks the click callback rather than
+# only repainting the button grey.
