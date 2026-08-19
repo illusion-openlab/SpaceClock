@@ -1,9 +1,12 @@
 package tech.illusion.spaceclock.content
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.ButtonDefaults
@@ -23,8 +26,19 @@ fun NavBar(current: ClockPage, onSelect: (ClockPage) -> Unit, modifier: Modifier
             // SpatialUI Button 没有 style 参数（样式由 size 推导）；禁用只传 enabled=false；
             // 不要自定义 ButtonSize，会静默丢圆角。选中态靠 colors 区分。
             Button(
-                onClick = { onSelect(page) },
-                modifier = Modifier.weight(1f),
+                onClick = {
+                    // 门禁 B 的穿透坑判据（AlarmCard 遮罩）：点这个按钮时如果这条日志没出现，
+                    // 说明点击没有落到按钮上——不管是被遮罩吞掉还是压根没点中。
+                    Log.i("NavBar", "tap reached page=${page.name}")
+                    onSelect(page)
+                },
+                modifier = Modifier.weight(1f).onGloballyPositioned { c ->
+                    Log.i(
+                        "ClockLayout",
+                        "navButton page=${page.name} w=${c.size.width} h=${c.size.height} " +
+                            "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
+                    )
+                },
                 colors = if (page == current) {
                     ButtonDefaults.buttonColors()
                 } else {

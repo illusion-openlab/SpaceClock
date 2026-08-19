@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.foundation.material.backgroundMaterial
 import com.pico.spatial.ui.platform.Material
 import kotlinx.coroutines.delay
+import tech.illusion.spaceclock.alarm.Alarm
+import tech.illusion.spaceclock.alarm.nextTriggerAt
 import tech.illusion.spaceclock.content.pages.AlarmPage
 import tech.illusion.spaceclock.content.pages.FocusPage
 import tech.illusion.spaceclock.content.pages.HomePage
@@ -103,6 +105,47 @@ fun ClockVolume() {
     // onEngineChanged 立刻把它刷新一次，不必等到下一次整秒对齐。
     var timerNowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
 
+    // 闹钟列表：和 selectedCityNames 同样的读盘/回写约定，初值直接读 ClockStore，
+    // 变更通过 AlarmPage 的 onAlarmsChanged 一次性写回（增删改开关都走这一条路径）。
+    var alarms by remember { mutableStateOf(store.alarms) }
+
+    // 到点待展示的闹钟队列：同一轮 10 秒轮询里可能有多个闹钟同时到点，卡片一次只能盖一个，
+    // 排队逐个展示而不是丢掉——静默漏报一个闹钟比多等一轮更糟。
+    var firingQueue by remember { mutableStateOf<List<Alarm>>(emptyList()) }
+    val firingAlarm = firingQueue.firstOrNull()
+    // 「稍后」= 记一个 10 分钟后的时刻，只在内存里，不需要跨进程重启存活（任务简报歧义决议 3）。
+    var snoozeUntil by remember { mutableStateOf<Map<Long, ZonedDateTime>>(emptyMap()) }
+    // 上一次轮询检查到的时刻：nextTriggerAt 的边界是"严格晚于 from"，所以要用 nextTriggerAt(上次检查时刻)
+    // 而不是 nextTriggerAt(现在) 来判断"这一轮窗口内是否有闹钟到点"——用 now 查只能看到未来，永远看不到
+    // "刚刚已经到点"这一刻。
+    var lastAlarmCheckAt by remember { mutableStateOf(ZonedDateTime.now()) }
+
+    // 每 10 秒对所有启用的闹钟扫一遍：Task 8 会把这套调度搬进前台服务，本任务先在 UI 层跑通。
+    // Compose 在离开这棵组合树时会自动取消这个协程，不需要额外的 dispose 钩子。
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(10_000L)
+            val nowCheck = ZonedDateTime.now()
+            val fromCheck = lastAlarmCheckAt
+            val newlyFired = mutableListOf<Alarm>()
+
+            val dueSnoozeIds = snoozeUntil.filterValues { !it.isAfter(nowCheck) }.keys
+            if (dueSnoozeIds.isNotEmpty()) {
+                alarms.filter { it.id in dueSnoozeIds }.forEach { newlyFired += it }
+                snoozeUntil = snoozeUntil - dueSnoozeIds
+            }
+            alarms.filter { it.enabled && it.id !in dueSnoozeIds }.forEach { a ->
+                val trigger = a.nextTriggerAt(fromCheck)
+                if (trigger != null && !trigger.isAfter(nowCheck)) newlyFired += a
+            }
+            if (newlyFired.isNotEmpty()) {
+                val existingIds = firingQueue.map { it.id }.toSet()
+                firingQueue = firingQueue + newlyFired.filter { it.id !in existingIds }
+            }
+            lastAlarmCheckAt = nowCheck
+        }
+    }
+
     // 每秒一跳。禁止用 withFrameNanos——它在 WindowContainer 里只触发一次。
     LaunchedEffect(Unit) {
         while (true) {
@@ -135,7 +178,7 @@ fun ClockVolume() {
         Row(Modifier.fillMaxSize().padding(20.dp)) {
             LeftColumn(
                 now,
-                statusLineFor(page, today, stopwatchEngine, countdownEngine, pomodoroEngine, timerNowMs),
+                statusLineFor(page, today, alarms, stopwatchEngine, countdownEngine, pomodoroEngine, timerNowMs),
                 Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
                     Log.i("ClockLayout", "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
                 },
@@ -168,7 +211,13 @@ fun ClockVolume() {
                         },
                         onSelectCity = { focusedCity = it },
                     )
-                    ClockPage.ALARM -> AlarmPage()
+                    ClockPage.ALARM -> AlarmPage(
+                        alarms = alarms,
+                        onAlarmsChanged = { updated ->
+                            store.alarms = updated
+                            alarms = updated
+                        },
+                    )
                     ClockPage.TIMER -> TimerPage(
                         stopwatchEngine = stopwatchEngine,
                         countdownEngine = countdownEngine,
@@ -196,6 +245,22 @@ fun ClockVolume() {
                 Log.i("ClockLayout", "navBar w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
             },
         )
+
+        // 提醒卡片盖在最上层——必须在 NavBar 之后添加才能真正盖住它（Compose 里同一个 Box
+        // 的子节点后添加的画在上面）。遮罩自己吞掉指针事件（AlarmCard 内部实现），这里
+        // 只负责队列的进出：稍后=记 10 分钟后的 snooze 时刻并让下一个排队的闹钟顶上来；
+        // 关闭=直接让下一个顶上来。
+        firingAlarm?.let { alarm ->
+            AlarmCard(
+                alarm = alarm,
+                weatherLine = null, // Task 9 前恒为 null（任务简报歧义决议 2）
+                onSnooze = {
+                    snoozeUntil = snoozeUntil + (alarm.id to ZonedDateTime.now().plusMinutes(10))
+                    firingQueue = firingQueue.drop(1)
+                },
+                onDismiss = { firingQueue = firingQueue.drop(1) },
+            )
+        }
     }
 }
 
@@ -206,6 +271,7 @@ fun ClockVolume() {
 private fun statusLineFor(
     page: ClockPage,
     today: LocalDate,
+    alarms: List<Alarm>,
     stopwatchEngine: TimerEngine,
     countdownEngine: TimerEngine,
     pomodoroEngine: PomodoroEngine,
@@ -213,9 +279,16 @@ private fun statusLineFor(
 ): String = when (page) {
     ClockPage.HOME -> homeStatusLine(today)
     ClockPage.WORLD -> "—"
-    ClockPage.ALARM -> "—"
+    ClockPage.ALARM -> alarmStatusLine(alarms)
     ClockPage.TIMER -> timerStatusLine(stopwatchEngine, countdownEngine, timerNowMs)
     ClockPage.FOCUS -> focusStatusLine(pomodoroEngine)
+}
+
+/** 「下个闹钟 07:00」；全部关闭或列表为空时显示「无闹钟」。 */
+private fun alarmStatusLine(alarms: List<Alarm>): String {
+    val now = ZonedDateTime.now()
+    val next = alarms.mapNotNull { it.nextTriggerAt(now) }.minOrNull()
+    return if (next == null) "无闹钟" else "下个闹钟 %02d:%02d".format(next.hour, next.minute)
 }
 
 /**
