@@ -1,0 +1,15 @@
+--------- beginning of main
+08-19 22:59:18.379 20756 20756 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-19 22:59:18.396 20756 20756 I TimingService: startForeground OK text=闹钟守候中
+08-19 22:59:18.400 20756 20756 I TimingService: Task8Verify auto-started a 20s countdown
+08-19 22:59:18.400 20756 20756 I TimingService: created alarms=3 enabled=3 seededCompletedToday=6 seededFocusedTodayMs=360000 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4)
+08-19 22:59:18.405 20756 20756 I ClockVolume: timing service connected
+08-19 22:59:23.210 20756 20756 I TimingService: TICK ticks=25 elapsedRealtime=50834785 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-19 22:59:28.233 20756 20756 I TimingService: TICK ticks=50 elapsedRealtime=50839809 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-19 22:59:33.256 20756 20756 I TimingService: TICK ticks=75 elapsedRealtime=50844832 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-19 22:59:38.270 20756 20756 I TimingService: TICK ticks=100 elapsedRealtime=50849845 foreground=true stopwatch=false countdown=true pomodoro=false remainingMs=900000
+08-19 22:59:38.471 20756 20756 I TimingService: countdown finished elapsedRealtime=50850046
+08-19 22:59:43.279 20756 20756 I TimingService: TICK ticks=125 elapsedRealtime=50854854 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:59:48.293 20756 20756 I TimingService: TICK ticks=150 elapsedRealtime=50859869 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:59:53.293 20756 20756 I TimingService: TICK ticks=175 elapsedRealtime=50864869 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:59:58.293 20756 20756 I TimingService: TICK ticks=200 elapsedRealtime=50869869 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

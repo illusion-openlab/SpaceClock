@@ -158,6 +158,16 @@ tick 照跑（`foreground=true`），无崩溃。权限弹框在体积窗口内�
 里的「允许"SpaceClock"发送通知？」），所以 `rememberLauncherForActivityResult` 在
 `WindowContainer` 内可用，不需要单独的 `LaunchActivity` 路由。每个进程只请求一次。
 
+### 陷阱：「只在有东西在跑时发布状态」会吞掉"跑完了"这一帧
+
+`tickLoop` 里为了不让空闲期每秒白重组 5 次，只在 `anyRunning` 时 `publish()`。**这个条件单独用
+是错的**：倒计时归零那一帧先把 `countdown.pause()` 掉，`anyRunning` 立刻变 false，于是那一帧
+（也就是唯一带 `countdownFinished=true` 的一帧）永远发不出去。上机实测过这个 bug——
+`task8-5-countdown-red.png`：倒计时停在 `00:00`、按钮还写着「暂停」，「时间到」不出现。
+修法是加一个 `mutated` 标记，本 tick 改过状态就必须发布（跨天归零同理）。
+阴性/阳性对照：`task8-5-countdown-{red,green}.png`，同一套临时钩子、同一段等待，只差这个修复；
+green 里是「时间到」+「知道了」。
+
 ### 已知取舍
 
 - 服务只在「有任何计时在跑 或 有启用的闹钟」时驻前台（简报锁定的判据）。**副作用**：倒计时在

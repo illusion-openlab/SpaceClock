@@ -238,11 +238,15 @@ class TimingService : Service() {
         var ticks = 0L
         while (true) {
             val now = SystemClock.elapsedRealtime()
-            rollOverIfNewDay()
+            // 本 tick 有没有改过状态。倒计时归零 / 跨天归零这两件事都会让"在跑"变成"不在跑"，
+            // 如果只按 anyRunning 决定要不要发布，那一帧的变化就永远发不出去——上机实测过这个
+            // bug：倒计时归零后 UI 停在 00:00、按钮还是「暂停」，「时间到」永远不出现。
+            var mutated = rollOverIfNewDay()
 
             if (countdown.isRunning && countdown.isFinished(now)) {
                 countdown.pause(now)
                 countdownFinished = true
+                mutated = true
                 Log.i(TAG, "countdown finished elapsedRealtime=$now")
             }
 
@@ -272,9 +276,10 @@ class TimingService : Service() {
                 }
             }
 
-            // 全空闲时不发布：TimerState 每次都带新的 sampledAtMs，照发会让 UI 每秒白重组 5 次。
+            // 全空闲且本 tick 没改过任何状态时不发布：TimerState 每次都带新的 sampledAtMs，
+            // 照发会让 UI 在什么都没在跑的时候每秒白重组 5 次。
             val anyRunning = stopwatch.isRunning || countdown.isRunning || pomodoro.isRunning
-            if (anyRunning) publish(now)
+            if (anyRunning || mutated) publish(now)
             ensureRunState()
 
             ticks++
@@ -313,14 +318,17 @@ class TimingService : Service() {
     /**
      * 跨天归零。应用可能整夜开着不关，跨天不能只在 onCreate 判一次。
      * 顺序同 onCreate：先 rollOverIfNewDay 清零，再把清零后的值落盘。
+     *
+     * @return 是否真的跨天了（调用方据此决定要不要发布新状态）。
      */
-    private fun rollOverIfNewDay() {
+    private fun rollOverIfNewDay(): Boolean {
         val today = LocalDate.now()
-        if (today == statsDay) return
+        if (today == statsDay) return false
         statsDay = today
         pomodoro.rollOverIfNewDay(today)
         store.saveTodayStats(today, pomodoro.completedToday, pomodoro.focusedTodayMs)
         Log.i(TAG, "stats rolled over to $today")
+        return true
     }
 
     // ---- 状态发布 / 前台状态 ----
