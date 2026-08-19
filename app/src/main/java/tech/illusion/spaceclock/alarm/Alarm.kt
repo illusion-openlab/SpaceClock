@@ -61,11 +61,16 @@ data class AlarmPollResult(
  * 该新触发哪些闹钟、「稍后」表该怎么更新。抽成纯函数是为了可单测，也是 Task 8 把整套轮询搬进
  * 前台服务时可以直接复用，不用在 Service 里重新写一遍这段逻辑。
  *
- * enabled 快照优先于「稍后」表里的旧决定：稍后 10 分钟等待期间用户把闹钟关掉，到点也不应该
- * 响——「关闭的闹钟永不触发」是简报锁死的硬性不变量，`nextTriggerAt` 已经用一个测试用例把它
- * 钉死在纯函数层，轮询层不能悄悄开一个绕过去的口子。同时把该 id 从「稍后」表里摘掉，而不是留
- * 着一条不再对应任何决定的陈旧记录——留着的唯一后果是它以后被重新打开时会莫名其妙响一次,
- * 摘掉更干净。
+ * enabled 快照决定「要不要真的响」：稍后 10 分钟等待期间用户把闹钟关掉，到点也不应该响
+ * ——「关闭的闹钟永不触发」是简报锁死的硬性不变量，`nextTriggerAt` 已经用一个测试用例把它
+ * 钉死在纯函数层，轮询层不能悄悄开一个绕过去的口子（见下面 `dueEnabledSnoozeIds`）。
+ *
+ * 但 enabled 快照**不**决定「要不要留着这条『稍后』记录」——只有到点的条目才摘：
+ * 到点的条目无论 enabled 与否都已经处理完，摘掉是唯一正确选择；没到点的条目即使当前
+ * disabled 也保留，因为「稍后」是用户的一次明确请求，10 分钟等待期内快速关闭再重新打开
+ * 是完全正常的操作序列——静默丢掉这次「稍后」比让用户在重新打开后按原计划收到一次提醒更糟。
+ * 这个窗口是有界的（snooze 长度，10 分钟）：条目一旦到点，不管 enabled 与否都会在下一次
+ * 轮询被摘掉，不会无限期挂着。
  */
 fun pollAlarms(
     alarms: List<Alarm>,
@@ -81,9 +86,9 @@ fun pollAlarms(
     if (dueEnabledSnoozeIds.isNotEmpty()) {
         alarms.filter { it.id in dueEnabledSnoozeIds }.forEach { newlyFired += it }
     }
-    // 保留下来的「稍后」条目：仍然启用、且这一轮还没到点。disabled 的（不管到点没到点）
-    // 和刚处理过的到点条目都摘掉。
-    val updatedSnoozeUntil = snoozeUntil.filterKeys { it in enabledIds && it !in dueSnoozeIds }
+    // 只摘到点的条目（不管 enabled 与否）。没到点的条目一律保留，即使当前 disabled——
+    // 见上面的 KDoc：这是有界的（snooze 长度）等待窗口，不是无限期挂着的死记录。
+    val updatedSnoozeUntil = snoozeUntil.filterKeys { it !in dueSnoozeIds }
 
     alarms.filter { it.enabled && it.id !in dueSnoozeIds }.forEach { a ->
         val trigger = a.nextTriggerAt(fromCheck)
