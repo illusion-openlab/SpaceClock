@@ -32,6 +32,12 @@ fun LeftColumn(now: LocalTime, statusLine: String, modifier: Modifier = Modifier
             color = PicoTheme.colorScheme.labelPrimary,
         )
         Spacer(Modifier.weight(1f))
-        Text(statusLine, style = PicoTheme.typography.bodySmall, color = PicoTheme.colorScheme.labelSecondary)
+        Text(
+            statusLine,
+            // 状态副行现在带日期数字（"周三 8月19日"）——全局约束要求所有数字都带 tnum，
+            // 混排的汉字不受影响，数字部分等宽即可。
+            style = PicoTheme.typography.bodySmall.copy(fontFeatureSettings = TABULAR_FIGURES),
+            color = PicoTheme.colorScheme.labelSecondary,
+        )
     }
 }
