@@ -26,6 +26,7 @@ import com.pico.spatial.ui.platform.Material
 import kotlinx.coroutines.delay
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.nextTriggerAt
+import tech.illusion.spaceclock.alarm.pollAlarms
 import tech.illusion.spaceclock.content.pages.AlarmPage
 import tech.illusion.spaceclock.content.pages.FocusPage
 import tech.illusion.spaceclock.content.pages.HomePage
@@ -127,20 +128,14 @@ fun ClockVolume() {
             delay(10_000L)
             val nowCheck = ZonedDateTime.now()
             val fromCheck = lastAlarmCheckAt
-            val newlyFired = mutableListOf<Alarm>()
 
-            val dueSnoozeIds = snoozeUntil.filterValues { !it.isAfter(nowCheck) }.keys
-            if (dueSnoozeIds.isNotEmpty()) {
-                alarms.filter { it.id in dueSnoozeIds }.forEach { newlyFired += it }
-                snoozeUntil = snoozeUntil - dueSnoozeIds
-            }
-            alarms.filter { it.enabled && it.id !in dueSnoozeIds }.forEach { a ->
-                val trigger = a.nextTriggerAt(fromCheck)
-                if (trigger != null && !trigger.isAfter(nowCheck)) newlyFired += a
-            }
-            if (newlyFired.isNotEmpty()) {
+            // 轮询判定本身是纯函数 pollAlarms（alarm/Alarm.kt）：给定当前闹钟表 + 稍后表 +
+            // 本轮时间窗口，算出该新触发哪些闹钟、稍后表该怎么更新。这里只负责状态落地。
+            val result = pollAlarms(alarms, snoozeUntil, fromCheck, nowCheck)
+            snoozeUntil = result.updatedSnoozeUntil
+            if (result.newlyFired.isNotEmpty()) {
                 val existingIds = firingQueue.map { it.id }.toSet()
-                firingQueue = firingQueue + newlyFired.filter { it.id !in existingIds }
+                firingQueue = firingQueue + result.newlyFired.filter { it.id !in existingIds }
             }
             lastAlarmCheckAt = nowCheck
         }
