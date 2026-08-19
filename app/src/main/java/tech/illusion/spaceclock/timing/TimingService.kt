@@ -3,6 +3,7 @@ package tech.illusion.spaceclock.timing
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
@@ -22,11 +23,29 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.pollAlarms
+import tech.illusion.spaceclock.platform.LaunchActivity
 import tech.illusion.spaceclock.store.ClockStore
+import tech.illusion.spaceclock.store.StopwatchSnapshot
 
 private const val TAG = "TimingService"
 private const val CHANNEL_ID = "spaceclock_timing"
 private const val NOTIFICATION_ID = 1001
+
+/**
+ * 到点告警用**另一个频道**，而不是复用 [CHANNEL_ID]。
+ *
+ * 硬性原因：频道的 importance 在同一次安装内创建之后改不动（系统只允许用户降级）。
+ * [CHANNEL_ID] 是常驻通知，必须 `IMPORTANCE_LOW`（否则每次文案变化都会响一声），复用它会让
+ * 「时间到」永远不响。所以新频道 + 新 channel id，两条通知各自独立。
+ */
+private const val ALERT_CHANNEL_ID = "spaceclock_alerts"
+
+/**
+ * 告警通知是**非常驻**的（和前台服务那条 [NOTIFICATION_ID] 无关，`stopForeground` 摘不掉它），
+ * 倒计时与闹钟各用一个 id：两者可能同时未确认，共用一个 id 会让后到的把前一条顶掉。
+ */
+private const val COUNTDOWN_ALERT_ID = 2001
+private const val ALARM_ALERT_ID = 2002
 
 /** 服务侧 tick 周期。UI 要 0.01 秒精度时按 [TimerState.sampledAtMs] 自己插值，服务不必 60Hz。 */
 private const val TICK_MS = 200L
@@ -107,7 +126,13 @@ class TimingService : Service() {
     private val countdown = TimerEngine()
     private lateinit var pomodoro: PomodoroEngine
 
+    /** 未确认的倒计时「时间到」。落盘在 [persistEdges]，重开时在 [onCreate] 里补弹。 */
     private var countdownFinished = false
+
+    /** 上一次真的写进磁盘的三份"未确认/可恢复"状态，用来做边沿触发（见 [persistEdges]）。 */
+    private var persistedCountdownAlert = false
+    private var persistedPendingAlarmIds: List<Long> = emptyList()
+    private var persistedStopwatch: StopwatchSnapshot? = null
 
     /** 已经结算过统计的日期。跨天要先归零再落盘，见 [rollOverIfNewDay]。 */
     private var statsDay: LocalDate = LocalDate.now()
@@ -146,8 +171,25 @@ class TimingService : Service() {
         statsDay = today
         // 闹钟表自己从持久层读一份，不等 UI 推：服务要在窗口关掉之后也能按时开火。
         alarms = store.alarms
+
+        // ---- 补弹（用户裁决：未确认的提醒落盘 + 重开时再浮现）----
+        // 三份落盘状态在这里回填。**一律不重发通知**：通知是"到点那一刻"的事件，补弹只负责让
+        // 界面上的提醒重新出现；重发会让用户在打开应用时又被响一次已经知道的事。
+        countdownFinished = store.countdownAlertPending
+        persistedCountdownAlert = countdownFinished
+        val pendingIds = store.pendingAlarmAlertIds
+        // 顺序按落盘的 id 顺序恢复（= 当时的展示顺序）；已被用户删掉的闹钟自然被过滤掉。
+        firingQueue = pendingIds.mapNotNull { id -> alarms.find { it.id == id } }
+        persistedPendingAlarmIds = firingQueue.map { it.id }
+        store.stopwatchSnapshot?.let { snap ->
+            stopwatch.seedPaused(snap.elapsedMs, snap.laps)
+            persistedStopwatch = snap
+        }
+        if (persistedPendingAlarmIds != pendingIds) store.pendingAlarmAlertIds = persistedPendingAlarmIds
+
         createChannel()
         publish()
+        _firingAlarm.value = firingQueue.firstOrNull()
         ensureRunState()
         scope.launch { tickLoop() }
         scope.launch { alarmLoop() }
@@ -156,7 +198,11 @@ class TimingService : Service() {
             TAG,
             "created alarms=${alarms.size} enabled=${alarms.count { it.enabled }} " +
                 "seededCompletedToday=${pomodoro.completedToday} " +
-                "seededFocusedTodayMs=${pomodoro.focusedTodayMs} config=${pomodoro.config}",
+                "seededFocusedTodayMs=${pomodoro.focusedTodayMs} config=${pomodoro.config} " +
+                "RESURFACE countdownFinished=$countdownFinished " +
+                "pendingAlarmIds=$persistedPendingAlarmIds (of $pendingIds) " +
+                "seededStopwatchElapsedMs=${stopwatch.elapsedMs(SystemClock.elapsedRealtime())} " +
+                "seededLaps=${stopwatch.laps.size}",
         )
     }
 
@@ -182,6 +228,7 @@ class TimingService : Service() {
     fun setCountdown(totalMs: Long) = command {
         countdown.setCountdown(totalMs)     // 规格：改时长会停表清零
         countdownFinished = false
+        cancelAlert(COUNTDOWN_ALERT_ID)
     }
 
     fun startCountdown() = command { countdown.start(it) }
@@ -191,6 +238,8 @@ class TimingService : Service() {
     fun resetCountdown() = command {
         countdown.reset()
         countdownFinished = false
+        // 用户已经在界面上确认了，那条系统通知不能继续挂着（否则点开又是一次已知的提醒）。
+        cancelAlert(COUNTDOWN_ALERT_ID)
     }
 
     fun startPomodoro() = command { pomodoro.start(it) }
@@ -213,11 +262,22 @@ class TimingService : Service() {
         val head = firingQueue.firstOrNull() ?: return@command
         snoozeUntil = snoozeUntil + (head.id to ZonedDateTime.now().plusMinutes(SNOOZE_MINUTES))
         firingQueue = firingQueue.drop(1)
+        // C1 定论轮次的观测点：卡片显示的是 firingQueue.first()（`ClockVolume` 读的就是
+        // `firingAlarm`），这里打出"被 snooze 的 id"和"接上卡片的下一个 id"，让"被显示的那个
+        // 闹钟才是被 snooze 的那个"成为可观测事实，而不是代码审查里的推理。
+        Log.i(
+            TAG,
+            "SNOOZE-APPLIED snoozedId=${head.id} until=${snoozeUntil[head.id]} " +
+                "queueAfter=${firingQueue.map { it.id }}",
+        )
+        if (firingQueue.isEmpty()) cancelAlert(ALARM_ALERT_ID)
     }
 
     fun dismissFiringAlarm() = command {
-        if (firingQueue.isEmpty()) return@command
+        val head = firingQueue.firstOrNull() ?: return@command
         firingQueue = firingQueue.drop(1)
+        Log.i(TAG, "DISMISS-APPLIED dismissedId=${head.id} queueAfter=${firingQueue.map { it.id }}")
+        if (firingQueue.isEmpty()) cancelAlert(ALARM_ALERT_ID)
     }
 
     /**
@@ -229,6 +289,7 @@ class TimingService : Service() {
         body(now)
         publish(now)
         _firingAlarm.value = firingQueue.firstOrNull()
+        persistEdges()
         ensureRunState()
     }
 
@@ -248,6 +309,11 @@ class TimingService : Service() {
                 countdownFinished = true
                 mutated = true
                 Log.i(TAG, "countdown finished elapsedRealtime=$now")
+                // 到点告警：必须发在下面 ensureRunState() 可能的 stopSelf() **之前**——通知一旦
+                // post 就独立于服务生命周期存在，晚一步服务就没了。这一帧是唯一的到点边沿
+                // （下一 tick 起 countdown.isRunning 已经是 false），所以天然只响一次，
+                // 不需要额外闩锁；补弹路径（onCreate）不走这里，也就不会重发。
+                postAlert(COUNTDOWN_ALERT_ID, "倒计时结束", "时间到")
             }
 
             if (pomodoro.isRunning) {
@@ -280,6 +346,8 @@ class TimingService : Service() {
             // 照发会让 UI 在什么都没在跑的时候每秒白重组 5 次。
             val anyRunning = stopwatch.isRunning || countdown.isRunning || pomodoro.isRunning
             if (anyRunning || mutated) publish(now)
+            // 落盘走 tick 里的边沿触发（Task 6 定的形状）：onPause/onDestroy 会被 force-stop 绕过。
+            persistEdges()
             ensureRunState()
 
             ticks++
@@ -307,11 +375,24 @@ class TimingService : Service() {
             snoozeUntil = result.updatedSnoozeUntil
             if (result.newlyFired.isNotEmpty()) {
                 val existingIds = firingQueue.mapTo(mutableSetOf()) { it.id }
-                firingQueue = firingQueue + result.newlyFired.filter { it.id !in existingIds }
-                Log.i(TAG, "ALARM-FIRED ids=${result.newlyFired.map { it.id }} at=$nowCheck")
+                val added = result.newlyFired.filter { it.id !in existingIds }
+                firingQueue = firingQueue + added
+                Log.i(
+                    TAG,
+                    "ALARM-FIRED ids=${result.newlyFired.map { it.id }} " +
+                        "added=${added.map { it.id }} queue=${firingQueue.map { it.id }} at=$nowCheck",
+                )
+                // 到点告警（评审 Important 3）：窗口关着的时候闹钟到点，原先只往 firingQueue 里
+                // 排一条、常驻通知还写着「闹钟守候中」，用户什么都收不到（比倒计时那个洞更大）。
+                // 这里补一条高优先级通知，文案用**本轮真的新到点**的那个闹钟（不是队头——队头可能
+                // 是上一轮还没确认的旧提醒）。只在这条边沿发，补弹路径不经过这里，所以不会重发。
+                added.firstOrNull()?.let { fired ->
+                    postAlert(ALARM_ALERT_ID, "闹钟", "%02d:%02d 到点了".format(fired.hour, fired.minute))
+                }
             }
             lastAlarmCheckAt = nowCheck
             _firingAlarm.value = firingQueue.firstOrNull()
+            persistEdges()
         }
     }
 
@@ -381,6 +462,9 @@ class TimingService : Service() {
                 getSystemService(NotificationManager::class.java)
                     .notify(NOTIFICATION_ID, buildNotification(text))
                 notificationText = text
+                // 这条日志是"权限被拒时 notify() 到底有没有被调用过"的唯一证据（Task 8 的
+                // §5.4 把这条列为未验证路径）。文案只在计时开始/结束时变，不是每 tick 一条。
+                Log.i(TAG, "notify ongoing text=$text")
             }
         } else if (foreground) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -403,6 +487,75 @@ class TimingService : Service() {
             .onFailure { Log.w(TAG, "startService(self) refused ${it.javaClass.simpleName}: ${it.message}") }
     }
 
+    /**
+     * 把三份"必须熬过关窗/强杀"的状态按**边沿触发**写盘：先算出这一刻应该是什么值，只在和
+     * 上一次真的写进去的值不同时才写一次。
+     *
+     * 为什么不写在 `onPause` / `onDestroy`：`pico-cli app stop` 是 force-stop 语义，那两个回调
+     * 一行都不跑（Task 6 实测）。为什么不每 tick 无条件写：正在跑的秒表每 200ms 都在变，
+     * 那样就变成每秒 5 次 SharedPreferences 写。
+     */
+    private fun persistEdges() {
+        if (countdownFinished != persistedCountdownAlert) {
+            store.countdownAlertPending = countdownFinished
+            persistedCountdownAlert = countdownFinished
+            Log.i(TAG, "PERSIST countdownAlertPending=$countdownFinished")
+        }
+
+        val pendingIds = firingQueue.map { it.id }
+        if (pendingIds != persistedPendingAlarmIds) {
+            store.pendingAlarmAlertIds = pendingIds
+            persistedPendingAlarmIds = pendingIds
+            Log.i(TAG, "PERSIST pendingAlarmAlertIds=$pendingIds")
+        }
+
+        // 只落盘"暂停且有内容"的秒表（用户裁决②）：正在跑的秒表由前台服务保证存活，而它的
+        // 快照每 tick 都在变；一旦重新开始跑就把磁盘上那份清掉，否则重开会恢复出一份过期数据。
+        val snapshot = if (!stopwatch.isRunning) {
+            val elapsed = stopwatch.elapsedMs(SystemClock.elapsedRealtime())
+            if (elapsed > 0L || stopwatch.laps.isNotEmpty()) {
+                StopwatchSnapshot(elapsed, stopwatch.laps.toList())
+            } else null
+        } else null
+        if (snapshot != persistedStopwatch) {
+            store.stopwatchSnapshot = snapshot
+            persistedStopwatch = snapshot
+            Log.i(TAG, "PERSIST stopwatchSnapshot=$snapshot")
+        }
+    }
+
+    /**
+     * 发一条**非常驻**的到点告警。
+     *
+     * `POST_NOTIFICATIONS` 被拒时系统静默丢弃这条通知（不抛异常），此时兜底的是**补弹**——
+     * 未确认的提醒已经落盘，用户下次打开窗口会看到「时间到」/`AlarmCard`。所以被拒不是残缺路径。
+     */
+    private fun postAlert(id: Int, title: String, text: String) {
+        val open = PendingIntent.getActivity(
+            this,
+            id,
+            Intent(this, LaunchActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val notification = Notification.Builder(this, ALERT_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setCategory(Notification.CATEGORY_ALARM)
+            .setAutoCancel(true)
+            .setContentIntent(open)
+            .build()
+        runCatching { getSystemService(NotificationManager::class.java).notify(id, notification) }
+            .onSuccess { Log.i(TAG, "ALERT-POSTED id=$id text=$text") }
+            .onFailure { Log.w(TAG, "ALERT-POST-FAILED id=$id ${it.javaClass.simpleName}: ${it.message}") }
+    }
+
+    /** 用户在界面上确认之后摘掉对应的告警通知（补弹靠落盘，不靠这条通知留着）。 */
+    private fun cancelAlert(id: Int) {
+        runCatching { getSystemService(NotificationManager::class.java).cancel(id) }
+        Log.i(TAG, "ALERT-CANCELLED id=$id")
+    }
+
     private fun notificationSummary(): String {
         val parts = buildList {
             if (stopwatch.isRunning) add("秒表")
@@ -413,8 +566,15 @@ class TimingService : Service() {
     }
 
     private fun createChannel() {
-        getSystemService(NotificationManager::class.java).createNotificationChannel(
+        val manager = getSystemService(NotificationManager::class.java)
+        // 常驻通知：IMPORTANCE_LOW，否则每次文案变化都会响一声。
+        manager.createNotificationChannel(
             NotificationChannel(CHANNEL_ID, "计时", NotificationManager.IMPORTANCE_LOW)
+        )
+        // 到点告警：另一个频道 + 高重要性。importance 创建后改不动，所以不能复用上面那个。
+        manager.createNotificationChannel(
+            NotificationChannel(ALERT_CHANNEL_ID, "到点提醒", NotificationManager.IMPORTANCE_HIGH)
+                .apply { enableVibration(true) }
         )
     }
 

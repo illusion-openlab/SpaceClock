@@ -8,6 +8,11 @@ import tech.illusion.spaceclock.alarm.serializeAlarms
 import tech.illusion.spaceclock.timing.PomodoroConfig
 
 /**
+ * 暂停中的秒表快照（用户裁决②）。[laps] 存的是分段差，与 `TimerEngine.laps` 同一口径。
+ */
+data class StopwatchSnapshot(val elapsedMs: Long, val laps: List<Long>)
+
+/**
  * SharedPreferences 持久化。工作区已验证这条路径跨进程重启存活（StockQuote 的自选股）。
  *
  * 今日统计存 date + count + focusedMs 三个键，读取时对比 LocalDate.now()：
@@ -52,6 +57,58 @@ class ClockStore(context: Context) {
         get() = runCatching { parseAlarms(prefs.getString(KEY_ALARMS, "[]")!!) }.getOrDefault(emptyList())
         set(value) = prefs.edit().putString(KEY_ALARMS, serializeAlarms(value)).apply()
 
+    /**
+     * 是否已经问过 `POST_NOTIFICATIONS`。**跨进程持久**（用户裁决①：只问一次）——
+     * 用内存标记不行：`LaunchedEffect(Unit)` 在同一进程里重挂载一次就会再问一次，
+     * 而重开窗口本身就会重挂载（Task 8 的 `task8-logcat.txt` 里同一个 pid 出现两条请求日志）。
+     */
+    var notificationPermissionAsked: Boolean
+        get() = prefs.getBoolean(KEY_NOTIF_ASKED, false)
+        set(value) = prefs.edit().putBoolean(KEY_NOTIF_ASKED, value).apply()
+
+    /**
+     * 未确认的倒计时「时间到」。到点时置位、用户点「知道了」（或重设时长）时清除。
+     *
+     * 为什么要落盘：服务在全空闲时会 `stopSelf()`，窗口也已经关了，那条只活在内存里的
+     * 「时间到」会随进程一起消失——用户设了 5 分钟倒计时、关掉窗口、回来发现它凭空没了。
+     * 落盘后重开时补弹（**不重发通知**，通知是到点那一刻的事）。
+     */
+    var countdownAlertPending: Boolean
+        get() = prefs.getBoolean(KEY_COUNTDOWN_ALERT, false)
+        set(value) = prefs.edit().putBoolean(KEY_COUNTDOWN_ALERT, value).apply()
+
+    /**
+     * 未确认的到点闹钟 id 队列，顺序即卡片展示顺序。和上面的倒计时同一个道理：
+     * 窗口关着的时候闹钟到点，那条提醒不能只活在服务内存里。
+     */
+    var pendingAlarmAlertIds: List<Long>
+        get() = prefs.getString(KEY_PENDING_ALARMS, null)
+            ?.split(sep)?.mapNotNull { it.toLongOrNull() }
+            ?: emptyList()
+        set(value) =
+            prefs.edit().putString(KEY_PENDING_ALARMS, value.joinToString(sep.toString())).apply()
+
+    /**
+     * 暂停中的秒表快照；null 表示没有可恢复的秒表（从未跑过、已复位、或正在跑）。
+     *
+     * "正在跑"不落盘：跑着的秒表由前台服务保证存活，而它的快照每 tick 都在变，落盘就变成
+     * 每 200ms 一次写。进程被杀时正在跑的秒表丢失，仍是已知取舍（不在本轮裁决范围内）。
+     */
+    var stopwatchSnapshot: StopwatchSnapshot?
+        get() {
+            if (!prefs.contains(KEY_SW_ELAPSED)) return null
+            val laps = prefs.getString(KEY_SW_LAPS, null)
+                ?.split(sep)?.mapNotNull { it.toLongOrNull() } ?: emptyList()
+            return StopwatchSnapshot(prefs.getLong(KEY_SW_ELAPSED, 0L), laps)
+        }
+        set(value) {
+            val e = prefs.edit()
+            if (value == null) e.remove(KEY_SW_ELAPSED).remove(KEY_SW_LAPS)
+            else e.putLong(KEY_SW_ELAPSED, value.elapsedMs)
+                .putString(KEY_SW_LAPS, value.laps.joinToString(sep.toString()))
+            e.apply()
+        }
+
     /** 返回 (今日完成数, 今日专注毫秒)。日期不匹配时返回零值。 */
     fun loadTodayStats(today: LocalDate): Pair<Int, Long> {
         val saved = prefs.getString(KEY_STATS_DATE, null)
@@ -77,5 +134,10 @@ class ClockStore(context: Context) {
         const val KEY_STATS_DATE = "stats_date"
         const val KEY_STATS_COUNT = "stats_count"
         const val KEY_STATS_MS = "stats_ms"
+        const val KEY_NOTIF_ASKED = "notif_asked"
+        const val KEY_COUNTDOWN_ALERT = "countdown_alert_pending"
+        const val KEY_PENDING_ALARMS = "pending_alarm_alerts"
+        const val KEY_SW_ELAPSED = "sw_elapsed"
+        const val KEY_SW_LAPS = "sw_laps"
     }
 }

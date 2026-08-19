@@ -92,9 +92,11 @@ fun ClockVolume() {
     var today by remember { mutableStateOf(ZonedDateTime.now().toLocalDate()) }
 
     // 通知权限：POST_NOTIFICATIONS 在 Android 13+ 是运行时权限，只在 manifest 声明拿不到。
-    // 被拒不影响任何功能——前台服务照起，闹钟照弹窗口内的 AlarmCard，只是那条通知不显示。
+    // 被拒不影响任何功能——前台服务照起，闹钟照弹窗口内的 AlarmCard，只是那条通知不显示，
+    // 未确认的提醒改由服务侧的补弹兜底（落盘 + 重开时再浮现）。只问一次的标记落在 ClockStore 里
+    // （跨进程持久）——重开窗口会重挂载这棵树，LaunchedEffect(Unit) 挡不住第二次请求。
     // 返回值没有别的消费者，落一条日志把这条路径的实际结果留在设备证据里。
-    val notificationsGranted = rememberNotificationPermission()
+    val notificationsGranted = rememberNotificationPermission(store)
     LaunchedEffect(notificationsGranted) {
         Log.i(TAG, "POST_NOTIFICATIONS granted=$notificationsGranted (拒绝也不影响计时与闹钟)")
     }

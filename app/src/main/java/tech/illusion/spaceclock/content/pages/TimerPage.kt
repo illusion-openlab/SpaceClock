@@ -52,8 +52,22 @@ private enum class TimerTab { STOPWATCH, COUNTDOWN }
  */
 @Composable
 fun TimerPage(state: TimerState, service: TimingService?) {
+    // 播种要把「未确认的到点」也算进来。只看 countdownRunning 是 Task 8 迁移引入的真回归：
+    // 倒计时在用户不在本页时归零（服务照样算得到），回到本页时 countdownRunning 已经是 false，
+    // 于是 uiMode 落到 STOPWATCH，而「时间到」只在 COUNTDOWN 分支里渲染——StateFlow 里有
+    // countdownFinished=true，界面上零暴露面：用户看到的是 00:00.00 的秒表。
     var uiMode by remember {
-        mutableStateOf(if (state.countdownRunning) TimerTab.COUNTDOWN else TimerTab.STOPWATCH)
+        mutableStateOf(
+            if (state.countdownRunning || state.countdownFinished) TimerTab.COUNTDOWN
+            else TimerTab.STOPWATCH
+        )
+    }
+    // 播种只覆盖"本页重新挂载"。还有两种情况播种碰不到：用户正停在本页的秒表标签上时倒计时
+    // 归零；以及本页在服务连上之前就挂载了（那一帧 state 还是空闲默认值）。两种都会让「时间到」
+    // 同样零暴露面，所以再补一个"未确认的到点出现时把标签切过去"的副作用。
+    // 用户之后自己切回秒表标签时 key 没变，不会被反复拽回来。
+    LaunchedEffect(state.countdownFinished) {
+        if (state.countdownFinished) uiMode = TimerTab.COUNTDOWN
     }
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {

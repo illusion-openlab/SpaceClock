@@ -51,6 +51,21 @@ class TimerEngine {
         _laps.clear()
     }
 
+    /**
+     * 用一份落盘快照把引擎恢复成**暂停态**（用户裁决②：暂停的秒表关窗后重开要还在）。
+     *
+     * 只在 `TimingService.onCreate` 里调一次。`lastLapTotalMs` 必须恢复成**分段和**而不是
+     * [elapsedMs]：计次存的是分段差，拿总用时当上次计次点会让重开后的第一段把前面所有段
+     * 再算一遍（`TimerEngineTest` 用一个总用时≠分段和的快照把这条钉死）。
+     */
+    fun seedPaused(elapsedMs: Long, laps: List<Long>) {
+        accumulatedMs = elapsedMs
+        startedAtMs = null
+        _laps.clear()
+        _laps += laps
+        lastLapTotalMs = laps.sum()
+    }
+
     fun elapsedMs(nowMs: Long): Long =
         accumulatedMs + (startedAtMs?.let { nowMs - it } ?: 0L)
 
