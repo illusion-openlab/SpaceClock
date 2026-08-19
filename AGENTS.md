@@ -89,21 +89,32 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 - `content/HomeVolume.kt` 当前只挂探针，没有任何 UI —— Task 1 起替换
 - manifest `windowcontainer.defaultsize = 0.4x0.4x0.4`（meters）是探针尺寸，Task 1 换成设计尺寸
 
-## tnum 等宽数字结论（Task 2，模拟器 emulator-5554 实测）
+## tnum 等宽数字结论（Task 2，模拟器 emulator-5554 实测，round 2 含阴性对照）
 
-`TABULAR_FIGURES = "tnum"` **在设备字体上生效**。截图无法判定这件事，用的是数字宽度实测：
-在 `LeftColumn` 临时插入两个同 style、同位数（4 位数字 + 1 冒号）、只换数字值的探针
-`Text("11:11")` / `Text("00:00")`，用 `onGloballyPositioned` 把测得宽度打进 logcat（tag
-`TnumProbe`），验证完当场移除：
+**产品要求（已确认满足）**：数字跨位宽变化时不能抖动。`LeftColumn` 里的四位数字（"11:11" vs
+"00:00"，同 style、同位数、只换数字值）实测宽度全部相等——**不管 `fontFeatureSettings` 是否
+传 `"tnum"`**：
 
 ```
-TnumProbe: allOnes  text=11:11 width=430
-TnumProbe: allZeros text=00:00 width=430
+TnumProbe: A tnum=on  text=11:11 width=430
+TnumProbe: B tnum=on  text=00:00 width=430
+TnumProbe: C tnum=off text=11:11 width=430
+TnumProbe: D tnum=off text=00:00 width=430
 ```
 
-两行宽度完全相等——如果 `tnum` 没生效，比例字体下 "1" 通常比 "0" 窄，`11:11` 应该比 `00:00`
-窄。数字相等说明设备字体确实带 tnum 的 GSUB 表，且 `fontFeatureSettings = "tnum"` 这个写法
-真的把它打开了。**不需要 Step 5 提到的固定宽度容器兜底**，继续用 `TABULAR_FIGURES` 常量即可。
+**计划要求（未确认，round 1 的结论被证伪）**：round 1 只测了 A/B（`tnum=on` 时两个数字串等宽），
+把这当成了"tnum 生效"的证据——但缺阴性对照，"A==B" 同样可以用"这套字体的 lining digits 本来
+就等宽、跟 tnum 开不开无关"来解释，两种假设无法区分。round 2 加了 C/D（同两个字符串，`style`
+上完全不传 `fontFeatureSettings`），结果 **C==D，且和 A、B 一样都是 430**。这直接证伪了
+round 1 的结论：关掉 tnum 后数字宽度毫无变化，说明**设备字体本身的数字字形天生等宽（inherently
+tabular），`fontFeatureSettings = "tnum"` 在这套字体上的独立作用没有被证实**——它可能确实在
+起作用但被字体的默认行为掩盖了，也可能是纯粹的空操作，本实验设计无法区分这两种情况。
+
+**结论怎么用**：产品要求已经满足，不需要 Step 5 提到的固定宽度容器兜底，继续在
+`TextStyle` 上写 `fontFeatureSettings = TABULAR_FIGURES` 作为零成本保险——如果换字体，这行代码
+可能从"没用但无害"变成"真正必需"，删掉它没有收益。但**不要把这次实测引用为"tnum 已验证生效"
+的证据**：如果未来需要证明 `tnum` 本身的因果作用（而不是"数字不抖"这个结果），当前证据不够，
+需要换一套能展示字体默认比例数字的样本（例如切换到已知非等宽的字体做对照）才能分离两个假设。
 
 ## 已知待办 / 陷阱
 
