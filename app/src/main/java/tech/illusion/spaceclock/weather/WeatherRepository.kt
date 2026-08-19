@@ -196,15 +196,23 @@ private fun toHourMinute(isoDateTime: String): String {
 private fun Double.roundToIntHalfUp(): Int = Math.round(this).toInt()
 
 /**
- * 风速 (km/h, Open-Meteo `wind_speed_10m` 默认单位) -> 蒲福风级 (Beaufort scale)。
- * `WeatherSnapshot.windScale` 的单位是"级"，不是原始风速，需要这一层换算；
- * 阈值抄标准蒲福风级表（0~12 级，km/h 上限）。
+ * 风速 (km/h) -> 蒲福风级 (Beaufort scale)。
+ *
+ * 单位口径（假设，未经项目内证据验证）：Open-Meteo 的 `current=...,wind_speed_10m,...`
+ * 请求没有传 `wind_speed_unit`，按官方文档默认单位是 km/h，所以下表按 km/h 解释；
+ * fix round 1 评审标了这条"⚠️ 无法从项目内证据确认"，这里只写清楚假设，不声称已验证。
+ *
+ * `WeatherSnapshot.windScale` 的单位是"级"，不是原始风速，需要这一层换算。表按标准蒲福风级
+ * （km/h）的**下一档下界**取值，配合严格 `<` 比较；即 `BEAUFORT_THRESHOLDS_KMH[i]` 是"还算
+ * i 级"的风速上限的下一个值（等价写法是保留每档上界改用 `<=` 比较，两者选一，不要混用）：
+ *   0: <1     1: 1–5     2: 6–11    3: 12–19    4: 20–28    5: 29–38    6: 39–49
+ *   7: 50–61  8: 62–74   9: 75–88   10: 89–102  11: 103–117 12: ≥118
  */
 private val BEAUFORT_THRESHOLDS_KMH = doubleArrayOf(
-    1.0, 5.0, 11.0, 19.0, 28.0, 38.0, 49.0, 61.0, 74.0, 88.0, 102.0, 117.0,
+    1.0, 6.0, 12.0, 20.0, 29.0, 39.0, 50.0, 62.0, 75.0, 89.0, 103.0, 118.0,
 )
 
-private fun beaufortScale(speedKmh: Double): Int {
+internal fun beaufortScale(speedKmh: Double): Int {
     for (scale in BEAUFORT_THRESHOLDS_KMH.indices) {
         if (speedKmh < BEAUFORT_THRESHOLDS_KMH[scale]) return scale
     }
