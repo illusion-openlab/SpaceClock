@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.foundation.material.backgroundMaterial
 import com.pico.spatial.ui.platform.Material
@@ -29,8 +30,11 @@ import tech.illusion.spaceclock.content.pages.HomePage
 import tech.illusion.spaceclock.content.pages.TimerPage
 import tech.illusion.spaceclock.content.pages.WorldPage
 import tech.illusion.spaceclock.content.pages.formatMinSec
+import tech.illusion.spaceclock.store.ClockStore
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
+import tech.illusion.spaceclock.timing.Phase
+import tech.illusion.spaceclock.timing.PomodoroEngine
 import tech.illusion.spaceclock.timing.TimerEngine
 import android.os.SystemClock
 import java.time.LocalDate
@@ -45,12 +49,23 @@ import java.time.ZonedDateTime
 fun ClockVolume() {
     var page by remember { mutableStateOf(ClockPage.HOME) }
 
+    // 持久化入口集中在这一层：WorldPage/FocusPage 都不直接碰 ClockStore，靠 ClockVolume
+    // 的回调读写——和秒表/倒计时引擎"状态活在页面切换之上"同一个理由，持久层访问点也不该
+    // 散在各页面里。context 用 LocalContext.current（StockQuote WatchlistLocalStore 同款
+    // 已验证路径），ClockStore 本身只在第一次组合时 remember 一次，内部是普通 SharedPreferences
+    // 读写，不需要跟着 recomposition 重建。
+    val context = LocalContext.current
+    val store = remember { ClockStore(context) }
+
     // 世界时钟的城市状态提到这一层，原因不是"看起来更整齐"：`WorldPage` 只在 WORLD 页存在，
     // 页面级 remember 会随切页销毁，而地球的标记点必须在切到其他页之后仍然在（设计文档 §2：
-    // 地球是常驻背景层）。Task 6 的 `ClockStore` 会把这三份状态一起接上持久化，这里仍然只放
-    // 内存态，不提前建那条管线。
-    var selectedCities by remember { mutableStateOf(DEFAULT_SELECTED_CITIES) }
-    var homeCityName by remember { mutableStateOf(DEFAULT_HOME_CITY) }
+    // 地球是常驻背景层）。城市名列表和本地城市现在都来自 `ClockStore`（Task 6），初值直接读
+    // 持久层；后续变更走下面 onAddCity/onSetHome 的回调，既更新这份内存态触发重组，也立刻写盘。
+    var selectedCityNames by remember { mutableStateOf(store.selectedCityNames) }
+    var homeCityName by remember { mutableStateOf(store.homeCityName) }
+    val selectedCities = remember(selectedCityNames) {
+        selectedCityNames.mapNotNull { name -> BUILTIN_CITIES.find { it.name == name } }
+    }
     // 点选中的城市：驱动地球把它转到正面，同时给列表行做高亮。
     var focusedCity by remember { mutableStateOf<City?>(null) }
     // 墙上时间显示用 ZonedDateTime.now()（Global Constraints）：时区在取值源头就显式化，
@@ -67,18 +82,41 @@ fun ClockVolume() {
     // 在跑"，引擎必须活在页面切换之上——和 selectedCities/focusedCity 同一个理由。
     val stopwatchEngine = remember { TimerEngine() }
     val countdownEngine = remember { TimerEngine() }
-    // 状态副行用的时间源，独立于 TimerPage 自己 16ms 一跳的精细循环（那个只在页面可见且
-    // 计时器在跑时才存在）。这里只需要 mm:ss 级新鲜度，跟随下面已有的 1 秒轮询一起刷新即可，
-    // 不必再起一条协程。TimerPage 的每次引擎变更还会通过 onTimerEngineChanged 立刻把它
-    // 刷新一次，不必等到下一次整秒对齐。
+
+    // 番茄钟引擎同样活在页面切换之上，理由和秒表/倒计时一致。回填今日统计的三步顺序是
+    // 任务简报锁死的硬顺序：rollOverIfNewDay 先判断跨天（它内部 statsDate 初值是 null，
+    // 首次调用一定会清零），再读持久层，最后 seedStats 回填——顺序反了会静默把磁盘上的
+    // 「今日完成」冲掉，用户看到的只是数字莫名归零，不会报错。三行故意连在一起写在同一个
+    // remember 块里，不拆到不同生命周期回调，避免以后有人在中间插一行读盘操作。
+    val pomodoroEngine = remember {
+        PomodoroEngine(store.pomodoroConfig).also { engine ->
+            val startupToday = LocalDate.now()
+            engine.rollOverIfNewDay(startupToday)                                   // 1. 先判定跨天
+            val (count, focusedMs) = store.loadTodayStats(startupToday)             // 2. 再读持久层
+            engine.seedStats(startupToday, count, focusedMs)                        // 3. 最后回填
+        }
+    }
+
+    // 状态副行用的时间源，独立于 TimerPage/FocusPage 自己 16ms 一跳的精细循环（那些只在
+    // 页面可见且计时器在跑时才存在）。这里只需要 mm:ss 级新鲜度，跟随下面已有的 1 秒轮询
+    // 一起刷新即可，不必再起一条协程。TimerPage/FocusPage 的每次引擎变更还会通过
+    // onEngineChanged 立刻把它刷新一次，不必等到下一次整秒对齐。
     var timerNowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
 
     // 每秒一跳。禁止用 withFrameNanos——它在 WindowContainer 里只触发一次。
     LaunchedEffect(Unit) {
         while (true) {
             val zonedNow = ZonedDateTime.now()
+            val newToday = zonedNow.toLocalDate()
+            if (newToday != today) {
+                // 应用可能整夜开着不关：跨天不能只在启动时判定一次，这里复用同一套
+                // rollOverIfNewDay + saveTodayStats，覆盖"应用一直在前台，午夜自然滚过去"
+                // 这条路径。当天内重复调用是无副作用的空操作（statsDate == today 直接返回）。
+                pomodoroEngine.rollOverIfNewDay(newToday)
+                store.saveTodayStats(newToday, pomodoroEngine.completedToday, pomodoroEngine.focusedTodayMs)
+            }
             now = zonedNow.toLocalTime()
-            today = zonedNow.toLocalDate()
+            today = newToday
             timerNowMs = SystemClock.elapsedRealtime()
             delay(1000L - System.currentTimeMillis() % 1000L) // 对齐到整秒，避免跳秒抖动
         }
@@ -97,7 +135,7 @@ fun ClockVolume() {
         Row(Modifier.fillMaxSize().padding(20.dp)) {
             LeftColumn(
                 now,
-                statusLineFor(page, today, stopwatchEngine, countdownEngine, timerNowMs),
+                statusLineFor(page, today, stopwatchEngine, countdownEngine, pomodoroEngine, timerNowMs),
                 Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
                     Log.i("ClockLayout", "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
                 },
@@ -119,8 +157,15 @@ fun ClockVolume() {
                         cities = selectedCities,
                         homeCityName = homeCityName,
                         focusedCityName = focusedCity?.name,
-                        onAddCity = { selectedCities = selectedCities + it },
-                        onSetHome = { homeCityName = it.name },
+                        onAddCity = { city ->
+                            val updated = selectedCityNames + city.name
+                            store.selectedCityNames = updated
+                            selectedCityNames = updated
+                        },
+                        onSetHome = { city ->
+                            store.homeCityName = city.name
+                            homeCityName = city.name
+                        },
                         onSelectCity = { focusedCity = it },
                     )
                     ClockPage.ALARM -> AlarmPage()
@@ -129,7 +174,18 @@ fun ClockVolume() {
                         countdownEngine = countdownEngine,
                         onEngineChanged = { timerNowMs = SystemClock.elapsedRealtime() },
                     )
-                    ClockPage.FOCUS -> FocusPage()
+                    ClockPage.FOCUS -> FocusPage(
+                        engine = pomodoroEngine,
+                        onConfigChanged = { store.pomodoroConfig = it },
+                        onStatsChanged = {
+                            store.saveTodayStats(
+                                LocalDate.now(),
+                                pomodoroEngine.completedToday,
+                                pomodoroEngine.focusedTodayMs,
+                            )
+                            timerNowMs = SystemClock.elapsedRealtime()
+                        },
+                    )
                 }
             }
         }
@@ -145,20 +201,21 @@ fun ClockVolume() {
 
 /**
  * 状态副行：设计文档 §3 的表。占位会被逐任务替换成真实数据——
- * HOME→Task 2、WORLD→Task 9、ALARM→Task 7、TIMER→Task 5（本任务）、FOCUS→Task 6。
+ * HOME→Task 2、WORLD→Task 9、ALARM→Task 7、TIMER→Task 5、FOCUS→Task 6（本任务）。
  */
 private fun statusLineFor(
     page: ClockPage,
     today: LocalDate,
     stopwatchEngine: TimerEngine,
     countdownEngine: TimerEngine,
+    pomodoroEngine: PomodoroEngine,
     timerNowMs: Long,
 ): String = when (page) {
     ClockPage.HOME -> homeStatusLine(today)
     ClockPage.WORLD -> "—"
     ClockPage.ALARM -> "—"
     ClockPage.TIMER -> timerStatusLine(stopwatchEngine, countdownEngine, timerNowMs)
-    ClockPage.FOCUS -> "—"
+    ClockPage.FOCUS -> focusStatusLine(pomodoroEngine)
 }
 
 /**
@@ -174,6 +231,15 @@ private fun timerStatusLine(stopwatchEngine: TimerEngine, countdownEngine: Timer
         else -> "未开始"
     }
 
+/** 未开始（从未 start 过）和"暂停中"共用"未开始"文案——简报只区分运行中/未开始两态。 */
+private fun focusStatusLine(engine: PomodoroEngine): String {
+    if (!engine.isRunning) return "未开始"
+    return when (engine.phase) {
+        Phase.WORK -> "专注中 · 第 ${engine.round} 轮"
+        Phase.SHORT_BREAK, Phase.LONG_BREAK -> "休息中 · 第 ${engine.round} 轮"
+    }
+}
+
 /** 星期表按 `dayOfWeek.value`（1=周一..7=周日）取，不用 DateTimeFormatter 的 locale 默认值——设备 locale 不确定。 */
 private val WEEKDAY_NAMES_ZH = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
 
@@ -182,14 +248,3 @@ private fun homeStatusLine(date: LocalDate): String {
     return "$weekday ${date.monthValue}月${date.dayOfMonth}日"
 }
 
-/**
- * 初始展示的城市。跨时区取样，方便门禁 B 同时验证"6 行一屏"和"超过 6 城可滚动"两种状态
- * （面板可视区实测 800px、行高 120px，前 6 行进得去）。约翰内斯堡（5 字）刻意排在第 2 位：
- * 它是列表行长名字截断的现场样本，排在第一屏才验得到。
- */
-private val DEFAULT_SELECTED_CITIES: List<City> =
-    listOf("北京", "约翰内斯堡", "东京", "伦敦", "纽约", "悉尼", "迪拜", "巴黎", "洛杉矶")
-        .mapNotNull { name -> BUILTIN_CITIES.find { it.name == name } }
-
-/** 默认本地城市（Task 3 歧义决议 1）。 */
-private const val DEFAULT_HOME_CITY = "北京"

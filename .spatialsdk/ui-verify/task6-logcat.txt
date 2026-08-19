@@ -1,0 +1,56 @@
+########## round 1: FocusPage launch + geometry ##########
+08-19 19:12:31.585  7963  7963 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 19:12:31.586  7963  7963 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 19:12:31.586  7963  7963 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 19:12:31.586  7963  7963 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 19:12:31.600  7963  7963 I FocusVerify: TEMP verification: forced start
+08-19 19:12:31.613  7963  7963 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+
+---- dumpsys window windows | grep -o package, before persistence-kill screenshots ----
+   9 tech.illusion.spaceclock
+   4 tech.illusion.spaceclock.platform.LaunchActivity
+(no other tech.illusion.* / com.illusion.* windows present — no other-session bleed-through)
+
+########## round 2: persistence — SharedPreferences read, before force-kill ##########
+$ adb -s emulator-5554 shell run-as tech.illusion.spaceclock cat \
+    /data/data/tech.illusion.spaceclock/shared_prefs/spaceclock.xml
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="stats_date">2026-08-19</string>
+    <int name="stats_count" value="2" />
+    <long name="stats_ms" value="120000" />
+</map>
+
+---- 关闭/生命周期相关: force-stop (真正的 kill，不是优雅退出) ----
+$ adb -s emulator-5554 shell am force-stop tech.illusion.spaceclock
+$ adb -s emulator-5554 shell ps | grep spaceclock
+(no output — process confirmed gone, not just backgrounded)
+
+########## round 3: persistence — SharedPreferences read, immediately after relaunch ##########
+$ adb -s emulator-5554 shell run-as tech.illusion.spaceclock cat \
+    /data/data/tech.illusion.spaceclock/shared_prefs/spaceclock.xml
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="stats_date">2026-08-19</string>
+    <int name="stats_count" value="2" />
+    <long name="stats_ms" value="120000" />
+</map>
+(unchanged after force-kill + relaunch — the falsifiable claim: if the
+ rollOverIfNewDay -> loadTodayStats -> seedStats ordering trap had been
+ reversed, the app's own UI would have read back 0 here, not 2. It did not;
+ task6-4-persist-after-kill.png shows the app itself displaying
+ "今日完成 2 个番茄 / 累计专注 2 分" on this same cold start.)
+
+---- ClockLayout geometry, unchanged from prior tasks' baseline ----
+08-19 19:17:09.038  8991  8991 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 19:17:09.039  8991  8991 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 19:17:09.040  8991  8991 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 19:17:09.040  8991  8991 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 19:17:09.061  8991  8991 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+
+NOTE: pids differ across rounds (7963 -> 8991) because this is the same
+force-killed-and-relaunched process discussed above, not a new install.
+FocusVerify/TEMP-tagged code (forced page=FOCUS default, forced start,
+workMin/shortMin=1 override) existed only for this on-device verification
+pass and was fully reverted afterward — grep -rn "TEMP verification|FocusVerify"
+app/src/main/java returns nothing on the committed tree.

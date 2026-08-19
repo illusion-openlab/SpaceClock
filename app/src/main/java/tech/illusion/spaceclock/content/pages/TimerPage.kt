@@ -200,7 +200,7 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
     var running by remember { mutableStateOf(engine.isRunning) }
     var finished by remember { mutableStateOf(false) }
     var nowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
-    // 还没选过时长（engine.countdownTotalMs 还是初始的 0）时，大数字区用这个预览将要设的时长；
+    // 还没选过时长（engine.hasDuration 还是 false）时，大数字区用这个预览将要设的时长；
     // 一旦调过预设/自定义，displayMs 就直接读 engine.remainingMs，这个值不再参与显示。
     var pendingMinutes by remember { mutableStateOf(5) }
 
@@ -241,9 +241,9 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
         return
     }
 
-    // countdownTotalMs > 0 就是"这个实例是否配置过倒计时时长"的信号——与 isFinished 用的
-    // 同一个字段，不再靠已删除的 TimerMode.mode 判断。
-    val hasDuration = engine.countdownTotalMs > 0L
+    // engine.hasDuration 就是"这个实例是否配置过倒计时时长"的信号——与 isFinished 内部用的
+    // 同一个字段，不再靠已删除的 TimerMode.mode 判断；countdownTotalMs 本身不再对外暴露。
+    val hasDuration = engine.hasDuration
     val displayMs = if (hasDuration) engine.remainingMs(nowMs) else pendingMinutes * 60_000L
 
     fun applyMinutes(minutes: Int) {

@@ -18,9 +18,13 @@ class TimerEngine {
     private var accumulatedMs = 0L      // 已结算的时长
     private var startedAtMs: Long? = null   // 本段起点；null 表示没在跑
 
-    /** 倒计时总时长；0 表示这个实例还没配置过倒计时（也是 [isFinished] 判定的一部分）。 */
-    var countdownTotalMs: Long = 0L
-        private set
+    /** 倒计时总时长；0 表示这个实例还没配置过倒计时（也是 [isFinished] 判定的一部分）。
+     *  只在类内部用（remainingMs/isFinished/setCountdown），不对外暴露具体毫秒数——
+     *  外部唯一需要的信号是"是否已配置过"，见 [hasDuration]。 */
+    private var countdownTotalMs: Long = 0L
+
+    /** 唯一的外部消费点是"这个实例是否已配置过倒计时时长"，不需要暴露具体毫秒数。 */
+    val hasDuration: Boolean get() = countdownTotalMs > 0L
 
     private var lastLapTotalMs = 0L     // 上一次计次时的累计值，用来算分段差
 

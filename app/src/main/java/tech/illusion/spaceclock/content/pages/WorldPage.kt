@@ -50,8 +50,10 @@ import java.time.ZoneId
  * 世界时钟列表页。
  *
  * 城市列表、"本地城市"标记和当前选中城市都由 `ClockVolume` 持有并传进来——它们要驱动常驻的
- * 地球标记点，页面级 `remember` 会随切页销毁（Task 4）。仍然只是内存态，`ClockStore` 到
- * Task 6 才存在，那个任务会把三者一起接上持久化。
+ * 地球标记点，页面级 `remember` 会随切页销毁（Task 4）。城市名列表和本地城市现在经
+ * `ClockVolume` 落到 `ClockStore`（Task 6）：本页仍然只拿 `List<City>`/`String` 和几个
+ * 回调，不直接碰 `ClockStore`——持久化入口集中在 `ClockVolume` 一处。`focusedCityName`
+ * 依然是纯内存态（驱动地球转向的临时选中，不需要跨会话保留）。
  *
  * 时差换算的参照系用设备的物理时区（`ZoneId.systemDefault()`，和 Home 页 `ZonedDateTime.now()`
  * 同一来源），不是"设为本地"选中的那座城——后者只决定天气卡/状态副行看哪座城的天气
