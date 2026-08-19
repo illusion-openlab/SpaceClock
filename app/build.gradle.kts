@@ -52,6 +52,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
+    // POST_NOTIFICATIONS 是运行时权限，只能通过 ActivityResult 契约申请；
+    // rememberLauncherForActivityResult / ActivityResultContracts 都在这个构件里。
+    implementation(libs.androidx.activity.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

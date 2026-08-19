@@ -77,9 +77,10 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 与 `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` 都是必需的；`POST_NOTIFICATIONS` 是**运行时权限**，装机时用
 `pico-cli app install -g` 授予，否则通知不显示（服务本身仍然运行）。
 
-## 探针遗留物（Task 8 要清掉）
+## 探针遗留物
 
-- `app/src/main/java/tech/illusion/spaceclock/timing/ProbeService.kt` — Task 8 换成真正的计时服务
+- ~~`timing/ProbeService.kt`~~ — Task 8 已删除，换成 `timing/TimingService.kt`（manifest 里的
+  `<service>` 也已指向新类）
 - ~~`earth/ProbeScene.kt`~~ — Task 4 已删除，换成 `earth/EarthScene.kt` + `earth/EarthSpinSystem.kt`
 - ~~`content/HomeVolume.kt`~~ / ~~manifest 0.4x0.4x0.4~~ — Task 1 已替换
 
@@ -101,6 +102,70 @@ Task 8 把这两个实例从 `ClockVolume` 迁移进前台服务时，必须原�
 那正是本次裁决否决掉的设计。`TimerEngine` 本身（`start`/`pause`/`reset`/`lap`/`setCountdown`/
 `elapsedMs`/`remainingMs`/`isFinished`，均为纯函数式、`nowMs` 由调用方传入）不需要改动，
 服务只是换个地方持有三份实例。
+
+**已落地（Task 8）**：`TimingService` 里就是 `stopwatch` / `countdown` / `pomodoro` 三个字段，
+`TimerEngine` 一行未改。后续任务同样不要合并它们。
+
+## 前台计时服务结论（Task 8，模拟器 emulator-5554 实测）
+
+证据：`.spatialsdk/ui-verify/task8-logcat.txt`、`task8-round2-logcat.txt`、
+`task8-svc-{visible,backgrounded,notif-denied}.txt`、`task8-windows-backgrounded.summary.txt`、
+`task8-prefs-before.xml`。截图 `task8-{1,2,3,4}-*.png` 按 `.gitignore:38` 不入库，只在本地。
+
+`timing/TimingService.kt` 现在是**计时状态的唯一真源**：秒表 + 倒计时两个独立 `TimerEngine`、
+一个 `PomodoroEngine`、闹钟轮询（复用纯函数 `pollAlarms`）全部在服务里；`ClockVolume` /
+`TimerPage` / `FocusPage` 只 `collectAsState()` 观察，一行计时状态都不留。
+
+### 判断「服务真的在后台跑」用哪些判据
+
+**不要**用"切回来后剩余时间少了 60 秒"当判据——`PomodoroEngine.remainingMs(nowMs)` 是 `nowMs`
+的纯函数，`advanceTo` 又用 `while` 一次补跨多个阶段，所以**即使服务一秒没跑**，UI 恢复时重算
+出来的剩余时间也正好少 60 秒。两个相反的假设给出同一个观测，这条判据永远不会失败。
+
+实际用的三条（前两条是真正的判别器）：
+
+1. **tick 日志连续性**：`TimingService: TICK ticks=…` 每 5 秒一条，必须覆盖整段"应用不可见"
+   的时间。实测 `KEYCODE_BACK` 关窗（`ClockVolume: timing service unbound` 22:48:54.665，
+   `dumpsys window` 里 spaceclock 窗口数 = 0）之后，ticks=100…475 从 22:48:58 连到 22:50:13
+   一条不缺，22:50:16 重新绑定。
+2. **阶段边界落在不可见窗口内**：`PHASE-BOUNDARY WORK -> SHORT_BREAK round=1 completedToday=6`
+   的时间戳是 22:49:38.795 —— 在无窗口区间正中，且紧跟着 `remainingMs=8` 那一 tick，不是恢复时
+   才补算的。这条比 tick 连续性更强：它测的是产品可见后果，不只是"协程还活着"。
+3. **`dumpsys activity services`**：不可见期间同一个 `ServiceRecord` 仍是
+   `isForeground=true types=0x40000000 startRequested=true lastStartId=1`。
+
+### 只被绑定的服务活不过解绑 → 必须自己进 started 状态
+
+`bindService(BIND_AUTO_CREATE)` 单独用不够：最后一个客户端解绑时服务就被销毁，窗口一关计时
+就断。`ensureRunState()` 在推上前台前先 `startService(自己)`（命令只来自前台 UI，不会撞后台
+启动限制），`dumpsys` 里的 `startRequested=true lastStartId=1` 就是这一步的证据。
+
+### 今日统计的落盘必须跟着引擎搬进服务
+
+Task 6 的落盘是**边缘触发**（比较前后值、变了就写），当时用 `am force-stop` 验过能存活。引擎
+搬进服务后如果落盘还留在 `FocusPage`，后台完成的番茄就永远写不进磁盘。落盘已随引擎搬入
+`tickLoop`，形状不变（不要改成 `onPause`/`onDispose` 落盘——force-stop 时那两个回调一行都不跑）。
+`rollOverIfNewDay(today)` 必须在 `seedStats(...)` **之前**跑，否则回填值会被清零。
+
+实测闭环：后台写 `STATS-SAVED completedToday=6 focusedTodayMs=360000`（22:49:38.796，无窗口期间）
+→ 磁盘 `stats_count=6 / stats_ms=360000`（`task8-prefs-before.xml`）→ 两次 force-stop 后新进程
+`seededCompletedToday=6 seededFocusedTodayMs=360000`。
+
+### `POST_NOTIFICATIONS` 被拒不影响任何功能（已实测）
+
+`pm revoke` 后启动：`ClockVolume: POST_NOTIFICATIONS granted=false` → `startForeground OK` →
+tick 照跑（`foreground=true`），无崩溃。权限弹框在体积窗口内正常渲染（`task8-4-notif-denied.png`
+里的「允许"SpaceClock"发送通知？」），所以 `rememberLauncherForActivityResult` 在
+`WindowContainer` 内可用，不需要单独的 `LaunchActivity` 路由。每个进程只请求一次。
+
+### 已知取舍
+
+- 服务只在「有任何计时在跑 或 有启用的闹钟」时驻前台（简报锁定的判据）。**副作用**：倒计时在
+  窗口已关闭的情况下归零，且此时没有别的计时/启用闹钟，服务会 `stopSelf()`，那条未确认的
+  「时间到」随进程一起消失。要不要把 `countdownFinished` 也算进"活跃"，是产品取舍，未擅自改。
+- `FGS_AVAILABLE = true` 仍然**只有模拟器证据**，真机确认待办。
+- 模拟器残留状态：3 条闹钟（07:00 / 20:43 / 20:58，Task 7 留下）+ 今日统计 6 个番茄 +
+  `pomo_short=1 / pomo_long=1`（Task 6 临时验证留下的时长配置）。都不是 bug。
 
 ## 地球场景结论（Task 4，模拟器 emulator-5554 实测）
 

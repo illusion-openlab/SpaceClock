@@ -34,31 +34,26 @@ import com.pico.spatial.ui.design.SegmentItem
 import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
-import tech.illusion.spaceclock.timing.TimerEngine
+import tech.illusion.spaceclock.timing.TimerState
+import tech.illusion.spaceclock.timing.TimingService
 
-/** 顶部 `SegmentControl` 的两个标签——纯 UI 选择，与 [TimerEngine] 内部状态无关。 */
+/** 顶部 `SegmentControl` 的两个标签——纯 UI 选择，与计时状态无关。 */
 private enum class TimerTab { STOPWATCH, COUNTDOWN }
 
 /**
  * 「计时」页：秒表 + 倒计时共用一个大数字显示区，顶部 `SegmentControl` 切换。
  *
- * 两个模式各自一个 [TimerEngine] 实例，不是共享一个——`setCountdown` 会停下并清零计时
- * （引擎自身的设计决定，见 `TimerEngine` 文档），如果秒表和倒计时公用同一个引擎，用户在
- * 倒计时页调时长会把正在跑/暂停的秒表悄悄清零，这是一个真实的数据丢失场景，不是"多一个对象
- * 更整齐"的偏好问题。两个引擎实例都由 [ClockVolume] 持有并 remember，切页不会重置——
- * 状态副行（Step 6）要在离开本页后仍然读到它们的运行状态。
+ * 本页**不持有任何计时状态**（Task 8）：秒表和倒计时的两个独立 `TimerEngine` 实例都活在
+ * [TimingService] 里，这里只读 [state] 并把按钮点击转成服务命令。切出应用后计时继续跑，
+ * 靠的就是引擎不在 Compose 树里。
  *
- * [onEngineChanged] 在任何引擎变更（start/pause/lap/reset/setCountdown）后立即调用，
- * 驱动 `ClockVolume` 立刻刷新状态副行，不必等它自己的 1Hz 轮询。
+ * 直接传 [service]（而不是包一层命令接口）是刻意的：只有一个实现、没有测试替身，多一层接口
+ * 只是多一层间接。[service] 可空是绑定本身的性质——连上之前 [state] 是空闲默认值，点击是空操作。
  */
 @Composable
-fun TimerPage(
-    stopwatchEngine: TimerEngine,
-    countdownEngine: TimerEngine,
-    onEngineChanged: () -> Unit,
-) {
+fun TimerPage(state: TimerState, service: TimingService?) {
     var uiMode by remember {
-        mutableStateOf(if (countdownEngine.isRunning) TimerTab.COUNTDOWN else TimerTab.STOPWATCH)
+        mutableStateOf(if (state.countdownRunning) TimerTab.COUNTDOWN else TimerTab.STOPWATCH)
     }
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {
@@ -76,8 +71,8 @@ fun TimerPage(
         }
         Spacer(Modifier.height(12.dp))
         when (uiMode) {
-            TimerTab.STOPWATCH -> StopwatchSection(stopwatchEngine, onEngineChanged)
-            TimerTab.COUNTDOWN -> CountdownSection(countdownEngine, onEngineChanged)
+            TimerTab.STOPWATCH -> StopwatchSection(state, service)
+            TimerTab.COUNTDOWN -> CountdownSection(state, service)
         }
     }
 }
@@ -95,17 +90,16 @@ private fun ColumnScope.BigDigits(text: String, color: Color) {
 }
 
 @Composable
-private fun StopwatchSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
-    var running by remember { mutableStateOf(engine.isRunning) }
+private fun StopwatchSection(state: TimerState, service: TimingService?) {
+    val running = state.stopwatchRunning
+    val laps = state.laps
     var nowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
-    var laps by remember { mutableStateOf(engine.laps.toList()) }
 
-    // 门禁 B 验证项：只在 running 时循环，暂停后协程立即退出，不空转（全局约束禁止
-    // withFrameNanos，这里也不能变成"退出条件写错、一直空转"的另一种反面教材）。
-    // tickCount 每 30 次（约 480ms）打一条日志，方便上机后用两次间隔的 logcat 判定循环
-    // 是否真的停了——纯"进入/退出各打一条"证明不了协程有没有在两条日志之间偷偷空转。
+    // 这条 16ms 循环**不再推进任何状态**——引擎在服务里，这里只是重新读一次单调时钟，用来把
+    // 服务 5Hz 的采样插值成 0.01 秒精度的显示（服务不必为了两位小数跑 60Hz）。
+    // 只在 running 时循环，暂停后协程立即退出，不空转（全局约束禁止 withFrameNanos）。
     LaunchedEffect(running) {
-        Log.i("TimerTick", "stopwatch loop enter running=$running")
+        Log.i("TimerTick", "stopwatch interpolation loop enter running=$running")
         var tickCount = 0
         while (running) {
             tickCount++
@@ -115,33 +109,24 @@ private fun StopwatchSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
             }
             delay(16L)
         }
-        Log.i("TimerTick", "stopwatch loop exit tickCount=$tickCount")
+        Log.i("TimerTick", "stopwatch interpolation loop exit tickCount=$tickCount")
     }
 
-    val elapsed = engine.elapsedMs(nowMs)
+    // 插值：采样值 + 采样之后又过去的那一段。coerceAtLeast(0) 挡住"服务刚发布新采样、本地
+    // nowMs 还没跳"的那 16ms 窗口，否则显示会倒退一下。
+    val elapsed = state.stopwatchElapsedMs +
+        if (running) (nowMs - state.sampledAtMs).coerceAtLeast(0L) else 0L
 
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         BigDigits(formatStopwatchClock(elapsed), PicoTheme.colorScheme.labelPrimary)
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Button(
-                onClick = {
-                    val t = SystemClock.elapsedRealtime()
-                    if (running) engine.pause(t) else engine.start(t)
-                    running = engine.isRunning
-                    nowMs = t
-                    onEngineChanged()
-                },
+                onClick = { if (running) service?.pauseStopwatch() else service?.startStopwatch() },
             ) { Text(if (running) "暂停" else "开始", style = PicoTheme.typography.labelLarge) }
 
             Button(
-                onClick = {
-                    val t = SystemClock.elapsedRealtime()
-                    engine.lap(t)
-                    laps = engine.laps.toList()
-                    nowMs = t
-                    onEngineChanged()
-                },
+                onClick = { service?.lapStopwatch() },
                 enabled = running,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PicoTheme.colorScheme.fillTertiary,
@@ -150,13 +135,7 @@ private fun StopwatchSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
             ) { Text("计次", style = PicoTheme.typography.labelLarge) }
 
             Button(
-                onClick = {
-                    engine.reset()
-                    laps = engine.laps.toList()
-                    running = engine.isRunning
-                    nowMs = SystemClock.elapsedRealtime()
-                    onEngineChanged()
-                },
+                onClick = { service?.resetStopwatch() },
                 enabled = !running,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PicoTheme.colorScheme.fillTertiary,
@@ -196,62 +175,26 @@ private const val CUSTOM_MIN_MINUTES = 1
 private const val CUSTOM_MAX_MINUTES = 180
 
 @Composable
-private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
-    var running by remember { mutableStateOf(engine.isRunning) }
-    var finished by remember { mutableStateOf(false) }
-    var nowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
-    // 还没选过时长（engine.hasDuration 还是 false）时，大数字区用这个预览将要设的时长；
-    // 一旦调过预设/自定义，displayMs 就直接读 engine.remainingMs，这个值不再参与显示。
+private fun CountdownSection(state: TimerState, service: TimingService?) {
+    val running = state.countdownRunning
+    // 还没选过时长（countdownHasDuration 还是 false）时，大数字区用这个预览将要设的时长；
+    // 一旦调过预设/自定义，displayMs 就直接读服务发布的剩余时间，这个值不再参与显示。
+    // 这是纯 UI 的候选值，不是计时状态，所以留在本页 remember 里。
     var pendingMinutes by remember { mutableStateOf(5) }
 
-    // 同一份"只在运行时循环"写法：归零瞬间在循环内部检测，立刻 pause + 停循环 + 进入
-    // "时间到"反馈，不依赖外部再点一次才发现已经归零。
-    LaunchedEffect(running) {
-        Log.i("TimerTick", "countdown loop enter running=$running")
-        var tickCount = 0
-        while (running) {
-            tickCount++
-            val t = SystemClock.elapsedRealtime()
-            nowMs = t
-            if (engine.isFinished(t)) {
-                engine.pause(t)
-                running = false
-                finished = true
-                onEngineChanged()
-            } else {
-                if (tickCount % 30 == 0) {
-                    Log.i("TimerTick", "countdown tick count=$tickCount nowMs=$nowMs")
-                }
-                delay(16L)
-            }
-        }
-        Log.i("TimerTick", "countdown loop exit tickCount=$tickCount finished=$finished")
-    }
-
-    if (finished) {
-        CountdownFinished(
-            onAcknowledge = {
-                engine.reset()
-                finished = false
-                running = engine.isRunning
-                nowMs = SystemClock.elapsedRealtime()
-                onEngineChanged()
-            },
-        )
+    // 归零判定搬进了服务（`TimingService.tickLoop`）：应用切出去、倒计时在后台归零，回来时
+    // 「时间到」照样在。本页不再需要一条 16ms 循环——倒计时是 mm:ss 精度，服务 5Hz 够了。
+    if (state.countdownFinished) {
+        CountdownFinished(onAcknowledge = { service?.resetCountdown() })
         return
     }
 
-    // engine.hasDuration 就是"这个实例是否配置过倒计时时长"的信号——与 isFinished 内部用的
-    // 同一个字段，不再靠已删除的 TimerMode.mode 判断；countdownTotalMs 本身不再对外暴露。
-    val hasDuration = engine.hasDuration
-    val displayMs = if (hasDuration) engine.remainingMs(nowMs) else pendingMinutes * 60_000L
+    val hasDuration = state.countdownHasDuration
+    val displayMs = if (hasDuration) state.countdownRemainingMs else pendingMinutes * 60_000L
 
     fun applyMinutes(minutes: Int) {
         pendingMinutes = minutes
-        engine.setCountdown(minutes * 60_000L)
-        running = engine.isRunning // setCountdown 会停下来，这里同步回 false
-        nowMs = SystemClock.elapsedRealtime()
-        onEngineChanged()
+        service?.setCountdown(minutes * 60_000L)    // 服务侧的 setCountdown 会停表清零
     }
 
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -300,23 +243,12 @@ private fun CountdownSection(engine: TimerEngine, onEngineChanged: () -> Unit) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Button(
-                onClick = {
-                    val t = SystemClock.elapsedRealtime()
-                    if (running) engine.pause(t) else engine.start(t)
-                    running = engine.isRunning
-                    nowMs = t
-                    onEngineChanged()
-                },
+                onClick = { if (running) service?.pauseCountdown() else service?.startCountdown() },
                 enabled = hasDuration,
             ) { Text(if (running) "暂停" else "开始", style = PicoTheme.typography.labelLarge) }
 
             Button(
-                onClick = {
-                    engine.reset()
-                    running = engine.isRunning
-                    nowMs = SystemClock.elapsedRealtime()
-                    onEngineChanged()
-                },
+                onClick = { service?.resetCountdown() },
                 enabled = !running && hasDuration,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PicoTheme.colorScheme.fillTertiary,

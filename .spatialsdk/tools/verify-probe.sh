@@ -49,7 +49,7 @@ pico-cli app stop -d "$D" "$PKG"
 release_once
 
 # 锁外：dump 日志留证据（只读，不分析）。
-adb -s "$D" logcat -d -s ClockProbe:V ProbeService:V AndroidRuntime:E ActivityManager:W \
+adb -s "$D" logcat -d -s ClockProbe:V TimingService:V ClockVolume:V AndroidRuntime:E ActivityManager:W \
   > "$OUTDIR/task0-logcat.txt" 2>&1
 echo "rc=$rc"
 exit "$rc"

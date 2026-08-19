@@ -18,7 +18,11 @@ data class PomodoroConfig(
  * remainingMs 是 UI 每帧都会调的**查询**，在查询里改状态会让"读一下"产生副作用，
  * 阶段计数就会随 UI 刷新率变化。
  */
-class PomodoroEngine(var config: PomodoroConfig = PomodoroConfig()) {
+class PomodoroEngine(config: PomodoroConfig = PomodoroConfig()) {
+
+    /** 只能通过 [applyConfig] 改：运行中换时长会让剩余时间凭空跳变，写权限必须带那道闸。 */
+    var config: PomodoroConfig = config
+        private set
 
     var phase: Phase = Phase.WORK
         private set
@@ -41,7 +45,25 @@ class PomodoroEngine(var config: PomodoroConfig = PomodoroConfig()) {
         Phase.LONG_BREAK -> config.longMin * 60_000L
     }
 
+    /**
+     * 当前阶段的总时长。进度环的分母；`FocusPage` 原先自己复制了一份同样的换算公式，
+     * 两份公式会各自漂移，改由引擎唯一提供。
+     */
+    val phaseTotalMs: Long get() = phaseLenMs()
+
     private fun elapsedMs(nowMs: Long) = accumulatedMs + (startedAtMs?.let { nowMs - it } ?: 0L)
+
+    /**
+     * 改时长配置。**运行中一律拒绝**并返回 false：换时长会让当前阶段的剩余时间凭空跳变，
+     * 用户无从判断剩余时间是按新时长还是旧时长算的（和 [TimerEngine.setCountdown] 停表清零
+     * 同一类问题）。以前这道闸只有 UI 的 `enabled = !running`，前台服务是第二个调用方，
+     * 靠某个界面的可用态挡不住——纵深防御放在引擎里。
+     */
+    fun applyConfig(next: PomodoroConfig): Boolean {
+        if (isRunning) return false
+        config = next
+        return true
+    }
 
     fun start(nowMs: Long) { if (!isRunning) startedAtMs = nowMs }
 

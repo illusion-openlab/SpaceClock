@@ -2,6 +2,8 @@ package tech.illusion.spaceclock.timing
 
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PomodoroEngineTest {
@@ -76,5 +78,53 @@ class PomodoroEngineTest {
         e.start(0L)
         e.pause(10 * min)
         assertEquals(15 * min, e.remainingMs(99 * min))
+    }
+
+    /**
+     * `phaseTotalMs` 是进度环的分母。以前 `FocusPage` 自己复制了一份同样的换算公式，
+     * 两份公式会各自漂移；由引擎唯一提供之后，这个测试就是防漂移的那道闸。
+     */
+    @Test
+    fun `phase total tracks the current phase`() {
+        val e = engine()
+        assertEquals(25 * min, e.phaseTotalMs)              // WORK
+        e.skip(0L)
+        assertEquals(Phase.SHORT_BREAK, e.phase)
+        assertEquals(5 * min, e.phaseTotalMs)               // SHORT_BREAK
+        // 走到长休：WORK→SHORT→WORK→…→第 4 个 WORK 之后才是 LONG_BREAK（roundsPerLong=4）。
+        // 阶段序列本身已有别的测试盯着，这里只关心分母跟着阶段走。
+        while (e.phase != Phase.LONG_BREAK) e.skip(0L)
+        assertEquals(15 * min, e.phaseTotalMs)              // LONG_BREAK
+    }
+
+    @Test
+    fun `phase total follows a config change`() {
+        val e = engine()
+        assertTrue(e.applyConfig(e.config.copy(workMin = 45)))
+        assertEquals(45 * min, e.phaseTotalMs)
+    }
+
+    /**
+     * 运行中改配置会让当前阶段的剩余时间凭空跳变。以前只有 UI 的 `enabled = !running` 挡着，
+     * 前台服务是第二个调用方，必须由引擎自己兜住——纵深防御，不靠某个界面的可用态。
+     */
+    @Test
+    fun `config change is refused while running`() {
+        val e = engine()
+        e.start(0L)
+        val before = e.config
+        assertFalse(e.applyConfig(PomodoroConfig(workMin = 45, shortMin = 10, longMin = 30)))
+        assertEquals(before, e.config)
+        assertEquals(25 * min, e.remainingMs(0L))   // 剩余时间没有被跳变
+    }
+
+    @Test
+    fun `config change is accepted while paused`() {
+        val e = engine()
+        e.start(0L)
+        e.pause(1 * min)
+        assertTrue(e.applyConfig(PomodoroConfig(workMin = 45, shortMin = 10, longMin = 30)))
+        assertEquals(45, e.config.workMin)
+        assertEquals(44 * min, e.remainingMs(1 * min))
     }
 }

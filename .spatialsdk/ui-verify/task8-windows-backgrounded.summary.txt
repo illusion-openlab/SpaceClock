@@ -1,0 +1,13 @@
+# dumpsys window windows, 22:49（KEYCODE_BACK 关窗后 6 秒）——只留判定用的两行
+# 判定项：不可见期间 spaceclock 是否还有窗口。
+spaceclock 窗口匹配行数 = 0
+对照：同一份 dump 里其它包的窗口仍在，说明 dump 本身有效：
+Window # 总数 = 7
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{55be329 u0 com.picoxr.systemui}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{af1723c u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{5f70c12 u0 com.picoxr.systemui}

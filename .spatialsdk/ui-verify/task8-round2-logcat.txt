@@ -1,0 +1,14 @@
+--------- beginning of main
+08-19 22:53:09.831 19349 19349 I ClockVolume: POST_NOTIFICATIONS granted=false (拒绝也不影响计时与闹钟)
+08-19 22:53:09.842 19349 19349 I TimingService: startForeground OK text=闹钟守候中
+08-19 22:53:09.843 19349 19349 I TimingService: created alarms=3 enabled=3 seededCompletedToday=6 seededFocusedTodayMs=360000 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4)
+08-19 22:53:09.852 19349 19349 I ClockVolume: timing service connected
+08-19 22:53:14.649 19349 19349 I TimingService: TICK ticks=25 elapsedRealtime=50466224 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:53:19.656 19349 19349 I TimingService: TICK ticks=50 elapsedRealtime=50471232 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:53:24.671 19349 19349 I TimingService: TICK ticks=75 elapsedRealtime=50476246 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:53:31.963 19546 19546 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-19 22:53:31.974 19546 19546 I TimingService: startForeground OK text=闹钟守候中
+08-19 22:53:31.975 19546 19546 I TimingService: created alarms=3 enabled=3 seededCompletedToday=6 seededFocusedTodayMs=360000 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4)
+08-19 22:53:31.979 19546 19546 I ClockVolume: timing service connected
+08-19 22:53:36.779 19546 19546 I TimingService: TICK ticks=25 elapsedRealtime=50488354 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-19 22:53:41.793 19546 19546 I TimingService: TICK ticks=50 elapsedRealtime=50493368 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

@@ -125,11 +125,12 @@
              nothing in logcat at all. -->
         <meta-data android:name="pico.spatial.ui.Logger" android:value="1" />
 
-        <!-- Platform probe: does a specialUse foreground service actually run on PICO OS 6?
+        <!-- The single source of truth for stopwatch / countdown / pomodoro / alarm scheduling.
              targetSdk 35 makes android:foregroundServiceType mandatory; without it
-             startForeground throws MissingForegroundServiceTypeException. -->
+             startForeground throws MissingForegroundServiceTypeException. The service only goes
+             foreground while something is actually running (see TimingService.ensureRunState). -->
         <service
-            android:name=".timing.ProbeService"
+            android:name=".timing.TimingService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property

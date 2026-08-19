@@ -1,6 +1,5 @@
 package tech.illusion.spaceclock.content.pages
 
-import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,55 +25,31 @@ import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.ProgressIndicatorEdgeStyle
 import com.pico.spatial.ui.design.SymbolicCircularProgressIndicator
 import com.pico.spatial.ui.design.Text
-import kotlinx.coroutines.delay
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 import tech.illusion.spaceclock.timing.Phase
 import tech.illusion.spaceclock.timing.PomodoroConfig
-import tech.illusion.spaceclock.timing.PomodoroEngine
+import tech.illusion.spaceclock.timing.PomodoroState
+import tech.illusion.spaceclock.timing.TimingService
 
 /**
  * 「专注」页：番茄钟环形进度 + 今日统计 + 时长配置。
  *
- * [engine] 活在 `ClockVolume` 层，切页不销毁——和秒表/倒计时同一个理由（状态副行要在离开
- * 本页后仍然读得到"是否在跑 / 第几轮"）。本页只负责显示和交互，并在自己可见、且引擎在跑时
- * 驱动 `advanceTo`；离开本页时循环随 `LaunchedEffect` 一起销毁，回来时 `advanceTo` 的
- * while 循环会一次性补上被跳过的阶段（引擎文档里的"设备睡眠"场景在这里同样适用）。
+ * 本页**不持有任何计时状态**（Task 8）：番茄钟引擎、阶段跃迁结算（`advanceTo`）、今日统计的
+ * 边缘触发落盘全部在 [TimingService] 里，这里只读 [state] 并把点击转成服务命令。
  *
- * 不直接持有 `ClockStore`——持久化入口集中在 `ClockVolume`（[onConfigChanged] 落盘时长配置，
- * [onStatsChanged] 落盘今日统计），和 `WorldPage` 不碰 `ClockStore` 的既有分工一致。
+ * 为什么落盘也得搬走：统计是在 `advanceTo` 跨过一个 WORK 阶段的瞬间变化的，而那一瞬间应用
+ * 完全可能不可见（用户切出去专注）。落盘留在本页就等于"只有正在看这一页时完成的番茄才算"，
+ * 一次 force-stop 就丢。落盘必须跟着引擎走，并且保持"变化即写"的形状，不能改成 onPause/
+ * onDispose 落盘——force-stop 时那两个回调一行都不跑。
  */
 @Composable
-fun FocusPage(
-    engine: PomodoroEngine,
-    onConfigChanged: (PomodoroConfig) -> Unit,
-    onStatsChanged: () -> Unit,
-) {
+fun FocusPage(state: PomodoroState, service: TimingService?) {
     val scheme = PicoTheme.colorScheme
     val typo = PicoTheme.typography
 
-    var running by remember { mutableStateOf(engine.isRunning) }
-    var nowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
+    val running = state.running
+    val config = state.config
     var showSettings by remember { mutableStateOf(false) }
-    var config by remember { mutableStateOf(engine.config) }
-
-    // 只在运行时循环，暂停后立即退出（TimerPage 同款写法，全局约束禁止 withFrameNanos）。
-    // advanceTo 是阶段跃迁唯一结算入口——remainingMs 只负责查询，这里必须显式调用 advanceTo
-    // 才会真的翻阶段 / 计数，长时间没回到本页时它会用 while 一次性补上错过的阶段。
-    LaunchedEffect(running) {
-        while (running) {
-            val t = SystemClock.elapsedRealtime()
-            val prevCount = engine.completedToday
-            val prevMs = engine.focusedTodayMs
-            engine.advanceTo(t)
-            nowMs = t
-            // 只有真的结算了一个番茄才落盘：advanceTo 每 16ms 调一次，但 completedToday /
-            // focusedTodayMs 只在跨越一个 WORK 阶段时才变化，不必每帧都写 SharedPreferences。
-            if (engine.completedToday != prevCount || engine.focusedTodayMs != prevMs) {
-                onStatsChanged()
-            }
-            delay(16L)
-        }
-    }
 
     Column(
         Modifier.fillMaxSize().padding(20.dp),
@@ -84,16 +58,16 @@ fun FocusPage(
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 PomodoroRing(
-                    phase = engine.phase,
-                    remainingMs = engine.remainingMs(nowMs),
-                    totalMs = phaseLenMsFor(engine.phase, config),
+                    phase = state.phase,
+                    remainingMs = state.remainingMs,
+                    totalMs = state.phaseTotalMs,
                 )
                 Spacer(Modifier.height(8.dp))
                 // 深空蓝配色下工作/休息不能靠色相区分（设计文档 §5.4.1）：环已经用亮度+粗细
                 // 区分了，这里再补一行文字阶段标签兜底——任何色觉差异都不能靠肉睛猜。
-                Text(phaseLabel(engine.phase), style = typo.titleMedium, color = scheme.labelPrimary)
+                Text(phaseLabel(state.phase), style = typo.titleMedium, color = scheme.labelPrimary)
                 Text(
-                    "第 ${engine.round} 轮",
+                    "第 ${state.round} 轮",
                     style = typo.bodySmall.copy(fontFeatureSettings = TABULAR_FIGURES),
                     color = scheme.labelSecondary,
                 )
@@ -101,12 +75,12 @@ fun FocusPage(
         }
 
         Text(
-            "今日完成 ${engine.completedToday} 个番茄",
+            "今日完成 ${state.completedToday} 个番茄",
             style = typo.bodyMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
             color = scheme.labelSecondary,
         )
         Text(
-            "累计专注 ${formatHoursMinutes(engine.focusedTodayMs)}",
+            "累计专注 ${formatHoursMinutes(state.focusedTodayMs)}",
             style = typo.bodyMedium.copy(fontFeatureSettings = TABULAR_FIGURES),
             color = scheme.labelSecondary,
         )
@@ -114,21 +88,11 @@ fun FocusPage(
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
-                onClick = {
-                    val t = SystemClock.elapsedRealtime()
-                    if (running) engine.pause(t) else engine.start(t)
-                    running = engine.isRunning
-                    nowMs = t
-                },
+                onClick = { if (running) service?.pausePomodoro() else service?.startPomodoro() },
             ) { Text(if (running) "暂停" else "开始", style = typo.labelLarge) }
 
             Button(
-                onClick = {
-                    val t = SystemClock.elapsedRealtime()
-                    engine.skip(t)
-                    running = engine.isRunning
-                    nowMs = t
-                },
+                onClick = { service?.skipPomodoro() },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = scheme.fillTertiary,
                     contentColor = scheme.labelPrimary,
@@ -145,13 +109,10 @@ fun FocusPage(
             PomodoroSettings(
                 config = config,
                 // 计时进行中禁止改：改时长会让当前阶段的剩余时间跳变，SpatialUI 禁用只传
-                // enabled = false，不自己画灰色状态。
+                // enabled = false，不自己画灰色状态。引擎侧还有一道 applyConfig 的运行中拒绝
+                // （纵深防御），这里的 enabled 只负责让用户看得出来现在不能改。
                 enabled = !running,
-                onConfigChanged = { next ->
-                    config = next
-                    engine.config = next
-                    onConfigChanged(next)
-                },
+                onConfigChanged = { next -> service?.setPomodoroConfig(next) },
             )
         }
     }
@@ -284,14 +245,6 @@ private fun PomodoroRing(phase: Phase, remainingMs: Long, totalMs: Long) {
             )
         },
     )
-}
-
-/** 阶段总时长（毫秒）。和引擎内部的 `phaseLenMs` 同一份换算公式，但引擎没有把它公开——
- * 计划要求引擎接口保持简报给定的形状不变，这个纯函数留在 UI 侧重复一次比改引擎签名更小。 */
-private fun phaseLenMsFor(phase: Phase, config: PomodoroConfig): Long = when (phase) {
-    Phase.WORK -> config.workMin * 60_000L
-    Phase.SHORT_BREAK -> config.shortMin * 60_000L
-    Phase.LONG_BREAK -> config.longMin * 60_000L
 }
 
 private fun phaseLabel(phase: Phase): String = when (phase) {
