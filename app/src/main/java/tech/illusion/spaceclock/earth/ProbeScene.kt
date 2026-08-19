@@ -4,68 +4,26 @@ import android.util.Log
 import androidx.annotation.MainThread
 import com.pico.spatial.core.container.SpatialViewContent
 import com.pico.spatial.core.ecs.Entity
-import com.pico.spatial.core.ecs.ModelComponent
 import com.pico.spatial.core.ecs.TransformComponent
-import com.pico.spatial.core.ecs.resource.BlendingMode
-import com.pico.spatial.core.ecs.resource.MeshResource
-import com.pico.spatial.core.ecs.resource.UnlitMaterial
-import com.pico.spatial.core.math.Color4
 import com.pico.spatial.core.math.Vector3
-import kotlin.math.cos
-import kotlin.math.sin
 
 private const val TAG = "ClockProbe"
 
 /** 从 Earth.usdz 离线量出来的常量，见设计文档 §4.1。运行时会用 getVisualBounds 复核。 */
-private const val MODEL_R = 0.140328f
 private const val MODEL_CZ = 0.141627f
-private const val LON_OFFSET_DEG = 198f
-
-/** 探针标记球半径。8mm 对 28cm 的地球约 2.8% 直径，在截图里仍是可辨认的一个点。 */
-private const val PIN_RADIUS_M = 0.008f
-
-/** 模型自身坐标系（Z 为极轴）下的表面点。设计文档 §4.2 的公式。 */
-private fun modelSurface(latDeg: Float, realLonDeg: Float, lift: Float = 1.02f): Vector3 {
-    val lat = Math.toRadians(latDeg.toDouble())
-    val lon = Math.toRadians(((realLonDeg + LON_OFFSET_DEG) % 360f).toDouble())
-    val r = MODEL_R * lift
-    return Vector3(
-        (r * cos(lat) * cos(lon)).toFloat(),
-        (r * cos(lat) * sin(lon)).toFloat(),
-        (MODEL_CZ + r * sin(lat)).toFloat(),
-    )
-}
-
-/** 一个诊断标记点的规格：名字、纬度、真实经度、颜色。 */
-private data class ProbePin(
-    val name: String,
-    val latDeg: Float,
-    val lonDeg: Float,
-    val color: Color4,
-)
 
 /**
- * 三个诊断标记点。它们的落点决定 SDK 的 USD 加载器是否把 Z-up 转成了引擎的 Y-up：
- *  - 北极点（红）：若落在球的**正上方** → 轴向被转换了（模型 Z 映射到引擎 Y）
- *                  若落在球的**正后/正前方** → 轴向原样保留
- *  - 北京（黄）、里约（绿）：确认经度方向与手性没有被镜像
- */
-private val PROBE_PINS = listOf(
-    ProbePin("northpole", 89.9f, 0f, Color4(1f, 0.2f, 0.2f, 1f)),
-    ProbePin("beijing", 39.9f, 116.4f, Color4(1f, 0.9f, 0.4f, 1f)),
-    ProbePin("rio", -22.9f, -43.2f, Color4(0.3f, 1f, 0.5f, 1f)),
-)
-
-/**
- * 建立平台风险探针场景：加载地球、量包围盒、放三个诊断标记点。
+ * 加载地球模型、量包围盒、把球心居中到视口原点。
  *
- * 三件事都只在日志和一张截图里留证据，没有任何 UI。Task 4 会删掉本文件。
+ * Task 0 曾在这里挂三个诊断标记点（判定 USD 加载器是否把 Z-up 转成了引擎的 Y-up），
+ * 判定已有结论并写进 AGENTS.md，标记点本身在 Task 1 起移除。地球加载 + 居中逻辑保留，
+ * Task 4 会把本文件整个替换成真正的 `EarthScene` + `GeoMath`。
  *
  * 刻意不收 `content` 参数——它只需要 [root]。把 [root] 挂进场景（`content.addEntity(root)`）
- * 是调用方的事，见 `HomeVolume`。
+ * 是调用方的事，见 `EarthView`。
  *
- * 返回加载出来的地球实体，交给 [ProbeHandle] 保管——三个标记点是它的子节点，所以销毁它一次
- * 就把整棵子树带走了。调用方必须把返回值交给 [ProbeHandle.attach]，否则就没有清理路径。
+ * 返回加载出来的地球实体，交给 [ProbeHandle] 保管，调用方必须把返回值交给
+ * [ProbeHandle.attach]，否则就没有清理路径。
  */
 suspend fun buildProbe(root: Entity): Entity {
     val earth = Entity.loadSuspend("asset://models/Earth.usdz")
@@ -100,36 +58,9 @@ suspend fun buildProbe(root: Entity): Entity {
         ),
     )
 
-    val pins = PROBE_PINS.map { spec ->
-        val p = modelSurface(spec.latDeg, spec.lonDeg)
-        val pin = Entity()
-        pin.components.set(
-            ModelComponent(
-                MeshResource.createSphere(PIN_RADIUS_M),
-                UnlitMaterial.create(BlendingMode.OPAQUE).apply { setBaseColor(spec.color) },
-            )
-        )
-        pin.components[TransformComponent::class.java]?.apply { position = p }
-        earth.addChild(pin) // 挂在地球下，自转时跟着转
-        Log.i(TAG, "pin ${spec.name} local=(%.4f,%.4f,%.4f)".format(p.x, p.y, p.z))
-        spec.name to pin
-    }
-
-    // 判定 2（数值）：标记点在引擎空间里实际落在哪。若北极点的偏移和 boundsCenter 落在同一
-    // 根轴上，说明 (a)——公式与网格一致；落在不同轴上说明 (b)——GeoMath 需要自己做换算。
-    pins.forEach { (name, pin) ->
-        val pb = pin.getVisualBounds(relativeTo = root, recursive = true)
-        Log.i(
-            TAG,
-            "PIN-READOUT %s engine=(%.4f,%.4f,%.4f) dominant=%s".format(
-                name, pb.center.x, pb.center.y, pb.center.z, dominantAxisOf(pb.center),
-            ),
-        )
-    }
-
     // 把球心移到视口原点。模型是「坐在地面上」的（球心在 +0.1416 的极轴方向上），不居中的话
-    // 半个球连带北极标记点都会被 SpatialView 的裁剪盒切掉，截图上就判不出轴向了。
-    // 用实测的 boundsCenter 而不是写死 MODEL_CZ，这样两种轴向约定下都成立。
+    // 半个球会被 SpatialView 的裁剪盒切掉。用实测的 boundsCenter 而不是写死 MODEL_CZ，
+    // 这样两种轴向约定下都成立。
     loaded?.apply {
         val before = position
         position = Vector3(before.x - b.center.x, before.y - b.center.y, before.z - b.center.z)
@@ -174,11 +105,11 @@ class ProbeHandle {
     }
 
     /**
-     * 把探针建出来的 4 个实体（地球 + 3 个标记点）连同它们持有的网格/材质资源一起放掉，
-     * 并从 `SpatialViewContent` 里摘掉 [root]。幂等，重复调用是空操作。
+     * 把建出来的地球实体连同它持有的网格/材质资源一起放掉，并从 `SpatialViewContent`
+     * 里摘掉 [root]。幂等，重复调用是空操作。
      *
-     * 标记点是地球的子节点，`destroy(recursively = true)` 会一起带走；先 `removeEntity`
-     * 再 `destroy`，避免 view 的实体集合里留下已销毁的引用。
+     * 先 `removeEntity` 再 `destroy`，避免 view 的实体集合里留下已销毁的引用；
+     * `recursively = true` 是为将来子节点（Task 4 的城市标记点）留的余量。
      */
     @MainThread
     fun dispose() {
@@ -200,15 +131,15 @@ class ProbeHandle {
 
     private fun teardown(content: SpatialViewContent, root: Entity, earth: Entity?) {
         content.removeEntity(root)
-        // 三个标记点是 earth 的子节点，`recursively = true` 一次把整棵子树连同网格/材质带走；
-        // 再销毁 root，这样即使 buildProbe 中途失败、earth 为 null，root 也一定被放掉。
+        // 先销毁 earth（recursively=true 一并带走将来挂在它下面的子节点），再销毁 root，
+        // 这样即使 buildProbe 中途失败、earth 为 null，root 也一定被放掉。
         val earthOk = earth?.destroy(recursively = true)
         val rootOk = root.destroy(recursively = true)
         Log.i(TAG, "probe disposed: earth.destroy=$earthOk root.destroy=$rootOk")
     }
 }
 
-/** 哪根轴上的分量最大，用于把 boundsCenter / 标记点位置读成一句人能判的话。 */
+/** 哪根轴上的分量最大，用于把 boundsCenter 位置读成一句人能判的话。 */
 private fun dominantAxisOf(v: Vector3): String {
     val ax = kotlin.math.abs(v.x)
     val ay = kotlin.math.abs(v.y)

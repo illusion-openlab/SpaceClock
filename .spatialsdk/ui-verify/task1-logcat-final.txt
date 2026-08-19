@@ -1,0 +1,13 @@
+--------- beginning of main
+08-19 14:16:19.388 17212 17212 I ClockProbe: earth transform pos=Vector3(x=0.0, y=0.0, z=0.0) quat=Quat(x=0.0, y=0.0, z=0.0, w=1.0) scale=Vector3(x=1.0, y=1.0, z=1.0)
+08-19 14:16:19.389 17212 17212 I ClockProbe: earth bounds size=(0.2807,0.2807,0.2807) center=(-0.0000,0.1416,-0.0000)
+08-19 14:16:19.389 17212 17212 I ClockProbe: AXIS-READOUT boundsCenter offset lands on: +Y (expect ~0.1416 on the polar axis)
+08-19 14:16:19.390 17212 17212 I ClockProbe: earth recentred from Vector3(x=0.0, y=0.0, z=0.0) to Vector3(x=1.4901161E-8, y=-0.14162691, z=4.4774535E-9)
+08-19 14:17:53.464 17523 17523 I ClockProbe: earth transform pos=Vector3(x=0.0, y=0.0, z=0.0) quat=Quat(x=0.0, y=0.0, z=0.0, w=1.0) scale=Vector3(x=1.0, y=1.0, z=1.0)
+08-19 14:17:53.465 17523 17523 I ClockProbe: earth bounds size=(0.2807,0.2807,0.2807) center=(-0.0000,0.1416,-0.0000)
+08-19 14:17:53.465 17523 17523 I ClockProbe: AXIS-READOUT boundsCenter offset lands on: +Y (expect ~0.1416 on the polar axis)
+08-19 14:17:53.466 17523 17523 I ClockProbe: earth recentred from Vector3(x=0.0, y=0.0, z=0.0) to Vector3(x=1.4901161E-8, y=-0.14162691, z=4.4774535E-9)
+08-19 14:19:33.497 17849 17849 I ClockProbe: earth transform pos=Vector3(x=0.0, y=0.0, z=0.0) quat=Quat(x=0.0, y=0.0, z=0.0, w=1.0) scale=Vector3(x=1.0, y=1.0, z=1.0)
+08-19 14:19:33.498 17849 17849 I ClockProbe: earth bounds size=(0.2807,0.2807,0.2807) center=(-0.0000,0.1416,-0.0000)
+08-19 14:19:33.498 17849 17849 I ClockProbe: AXIS-READOUT boundsCenter offset lands on: +Y (expect ~0.1416 on the polar axis)
+08-19 14:19:33.499 17849 17849 I ClockProbe: earth recentred from Vector3(x=0.0, y=0.0, z=0.0) to Vector3(x=1.4901161E-8, y=-0.14162691, z=4.4774535E-9)

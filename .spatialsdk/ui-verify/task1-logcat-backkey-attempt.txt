@@ -1,0 +1,15 @@
+--------- beginning of main
+08-19 14:13:44.936   827   827 W ActivityManager: type=1400 audit(0.0:52611): avc:  denied  { setsched } for  scontext=u:r:system_server:s0 tcontext=u:r:zygote:s0 tclass=process permissive=0 bug=b/77856826
+--------- beginning of system
+08-19 14:13:44.937   827   867 I ActivityManager: Start proc 16788:tech.illusion.spaceclock/u0a111 for top-activity {tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+08-19 14:13:44.938   827   867 I ActivityManager: ProcessObserver broadcast disabled
+08-19 14:13:44.970   827  4746 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-19 14:13:46.069 16788 16788 I ClockProbe: earth transform pos=Vector3(x=0.0, y=0.0, z=0.0) quat=Quat(x=0.0, y=0.0, z=0.0, w=1.0) scale=Vector3(x=1.0, y=1.0, z=1.0)
+08-19 14:13:46.070 16788 16788 I ClockProbe: earth bounds size=(0.2807,0.2807,0.2807) center=(-0.0000,0.1416,-0.0000)
+08-19 14:13:46.070 16788 16788 I ClockProbe: AXIS-READOUT boundsCenter offset lands on: +Y (expect ~0.1416 on the polar axis)
+08-19 14:13:46.070 16788 16788 I ClockProbe: earth recentred from Vector3(x=0.0, y=0.0, z=0.0) to Vector3(x=1.4901161E-8, y=-0.14162691, z=4.4774535E-9)
+08-19 14:13:50.125 16788 16788 I ClockProbe: probe disposed: earth.destroy=true root.destroy=true
+08-19 14:13:50.149   827   857 I ActivityManager: freezed hot/warm start: set svp pid 1321
+08-19 14:14:04.024   827 18443 I ActivityManager: Force stopping tech.illusion.spaceclock appid=10111 user=0: from pid 16907 from uid 2000
+08-19 14:14:04.027   827 18443 I ActivityManager: Killing 16788:tech.illusion.spaceclock/u0a111 PRSmt{d82a4a0 p:0 rp:16788 t:null sa:900 sps:18 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} (adj 900): stop tech.illusion.spaceclock due to from pid 16907 from uid 2000
+08-19 14:14:04.056   827   849 W ActivityManager: setHasOverlayUi called on unknown pid: 16788

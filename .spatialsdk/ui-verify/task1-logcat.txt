@@ -1,0 +1,34 @@
+--------- beginning of main
+08-19 14:10:11.167   827   842 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-19 14:10:11.167   827   842 E ActivityManager: java.lang.Throwable
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-19 14:10:11.167   827   842 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-19 14:10:11.177   827  1085 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-19 14:10:11.177   827  1085 E ActivityManager: java.lang.Throwable
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-19 14:10:11.177   827  1085 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-19 14:10:11.205   827   827 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-19 14:10:11.209   827   848 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-19 14:10:11.329   827  1095 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-19 14:10:11.592   827   909 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-19 14:10:12.622 16201 16201 I ClockProbe: earth transform pos=Vector3(x=0.0, y=0.0, z=0.0) quat=Quat(x=0.0, y=0.0, z=0.0, w=1.0) scale=Vector3(x=1.0, y=1.0, z=1.0)
+08-19 14:10:12.623 16201 16201 I ClockProbe: earth bounds size=(0.2807,0.2807,0.2807) center=(-0.0000,0.1416,-0.0000)
+08-19 14:10:12.623 16201 16201 I ClockProbe: AXIS-READOUT boundsCenter offset lands on: +Y (expect ~0.1416 on the polar axis)
+08-19 14:10:12.623 16201 16201 I ClockProbe: earth recentred from Vector3(x=0.0, y=0.0, z=0.0) to Vector3(x=1.4901161E-8, y=-0.14162691, z=4.4774535E-9)
+08-19 14:12:17.907   827   849 W ActivityManager: setHasOverlayUi called on unknown pid: 16201
+08-19 14:12:17.910   827   930 W ActivityManager: onBringUpServiceLocked, android

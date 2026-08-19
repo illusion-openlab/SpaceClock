@@ -45,14 +45,12 @@
             <!-- Default size of the Volumetric WindowContainer
                  "[width]x[height]x[depth]", uses dp as the unit unless specified otherwise
              -->
-            <!-- Probe size, in meters: the Earth model measures 0.2807 m across (design doc
-                 4.1) and entities are clipped to the SpatialView's box, so the container has to
-                 be at least that big on every axis or the sphere (and the north-pole pin that
-                 decides the axis question) gets cut away. Task 1 replaces this with the
-                 designed clock size. -->
+            <!-- Design size, in meters (design doc §2): a 0.60x0.45x0.30 box — wide enough for
+                 the 40%/56% left-clock/right-panel split plus the bottom nav bar, deep enough
+                 to hold the 0.2807m-diameter Earth model (design doc §4.1) without clipping. -->
             <meta-data
                 android:name="pico.spatial.windowcontainer.defaultsize"
-                android:value="0.4x0.4x0.4" />
+                android:value="0.60x0.45x0.30" />
 
             <!-- Unit of default size for the WindowContainer
                  "dp" — uses density-independent pixels (default)
@@ -86,7 +84,7 @@
              -->
             <meta-data
                 android:name="pico.spatial.windowcontainer.worldscaletype"
-                android:value="2" />
+                android:value="1" />
 
             <!-- Caption bar type of the WindowContainer
                  "0": CaptionBarType.Default, the caption bar is always visible (default)
@@ -94,7 +92,7 @@
              -->
             <meta-data
                 android:name="pico.spatial.windowcontainer.captionbar"
-                android:value="0" />
+                android:value="1" />
 
             <!-- Material background of the WindowContainer
                  "0": false, no material background

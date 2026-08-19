@@ -49,7 +49,7 @@ dependencies {
     implementation(libs.spatial.ui.design)
     implementation(libs.spatial.ui.sense)
     implementation(libs.spatial.ui.tracking)
-    implementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
