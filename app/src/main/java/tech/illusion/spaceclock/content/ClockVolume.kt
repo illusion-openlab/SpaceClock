@@ -28,8 +28,11 @@ import tech.illusion.spaceclock.content.pages.FocusPage
 import tech.illusion.spaceclock.content.pages.HomePage
 import tech.illusion.spaceclock.content.pages.TimerPage
 import tech.illusion.spaceclock.content.pages.WorldPage
+import tech.illusion.spaceclock.content.pages.formatMinSec
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
+import tech.illusion.spaceclock.timing.TimerEngine
+import android.os.SystemClock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -58,12 +61,25 @@ fun ClockVolume() {
     // now 反推，避免午夜跨天时状态行卡在旧日期（LocalTime 本身不带日期信息）。
     var today by remember { mutableStateOf(ZonedDateTime.now().toLocalDate()) }
 
+    // 秒表 / 倒计时各自一个引擎实例（Task 5），在这一层 remember 而不是 TimerPage 内部：
+    // TimerPage 只在 page==TIMER 时才被组合进树，切到其他页会把它连同内部 remember 一起
+    // 销毁。状态副行（下面 timerStatusLine）不管当前在看哪一页都要能读到"计时/倒计时是否
+    // 在跑"，引擎必须活在页面切换之上——和 selectedCities/focusedCity 同一个理由。
+    val stopwatchEngine = remember { TimerEngine() }
+    val countdownEngine = remember { TimerEngine() }
+    // 状态副行用的时间源，独立于 TimerPage 自己 16ms 一跳的精细循环（那个只在页面可见且
+    // 计时器在跑时才存在）。这里只需要 mm:ss 级新鲜度，跟随下面已有的 1 秒轮询一起刷新即可，
+    // 不必再起一条协程。TimerPage 的每次引擎变更还会通过 onTimerEngineChanged 立刻把它
+    // 刷新一次，不必等到下一次整秒对齐。
+    var timerNowMs by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
+
     // 每秒一跳。禁止用 withFrameNanos——它在 WindowContainer 里只触发一次。
     LaunchedEffect(Unit) {
         while (true) {
             val zonedNow = ZonedDateTime.now()
             now = zonedNow.toLocalTime()
             today = zonedNow.toLocalDate()
+            timerNowMs = SystemClock.elapsedRealtime()
             delay(1000L - System.currentTimeMillis() % 1000L) // 对齐到整秒，避免跳秒抖动
         }
     }
@@ -81,7 +97,7 @@ fun ClockVolume() {
         Row(Modifier.fillMaxSize().padding(20.dp)) {
             LeftColumn(
                 now,
-                statusLineFor(page, today),
+                statusLineFor(page, today, stopwatchEngine, countdownEngine, timerNowMs),
                 Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
                     Log.i("ClockLayout", "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
                 },
@@ -108,7 +124,11 @@ fun ClockVolume() {
                         onSelectCity = { focusedCity = it },
                     )
                     ClockPage.ALARM -> AlarmPage()
-                    ClockPage.TIMER -> TimerPage()
+                    ClockPage.TIMER -> TimerPage(
+                        stopwatchEngine = stopwatchEngine,
+                        countdownEngine = countdownEngine,
+                        onEngineChanged = { timerNowMs = SystemClock.elapsedRealtime() },
+                    )
                     ClockPage.FOCUS -> FocusPage()
                 }
             }
@@ -125,15 +145,32 @@ fun ClockVolume() {
 
 /**
  * 状态副行：设计文档 §3 的表。占位会被逐任务替换成真实数据——
- * HOME→Task 2（本任务）、WORLD→Task 9、ALARM→Task 7、TIMER→Task 5、FOCUS→Task 6。
+ * HOME→Task 2、WORLD→Task 9、ALARM→Task 7、TIMER→Task 5（本任务）、FOCUS→Task 6。
  */
-private fun statusLineFor(page: ClockPage, today: LocalDate): String = when (page) {
+private fun statusLineFor(
+    page: ClockPage,
+    today: LocalDate,
+    stopwatchEngine: TimerEngine,
+    countdownEngine: TimerEngine,
+    timerNowMs: Long,
+): String = when (page) {
     ClockPage.HOME -> homeStatusLine(today)
     ClockPage.WORLD -> "—"
     ClockPage.ALARM -> "—"
-    ClockPage.TIMER -> "—"
+    ClockPage.TIMER -> timerStatusLine(stopwatchEngine, countdownEngine, timerNowMs)
     ClockPage.FOCUS -> "—"
 }
+
+/**
+ * 秒表和倒计时是两个独立引擎，理论上可以同时在跑；两者都在跑时优先报秒表——两个 UI 步骤
+ * 描述里秒表排在前面，且秒表更常是"顺手掐一下"的临时用途，被状态行盖掉的代价更高。
+ */
+private fun timerStatusLine(stopwatchEngine: TimerEngine, countdownEngine: TimerEngine, nowMs: Long): String =
+    when {
+        stopwatchEngine.isRunning -> "秒表运行中"
+        countdownEngine.isRunning -> "倒计时 ${formatMinSec(countdownEngine.remainingMs(nowMs))}"
+        else -> "未开始"
+    }
 
 /** 星期表按 `dayOfWeek.value`（1=周一..7=周日）取，不用 DateTimeFormatter 的 locale 默认值——设备 locale 不确定。 */
 private val WEEKDAY_NAMES_ZH = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
