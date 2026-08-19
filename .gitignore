@@ -37,3 +37,8 @@ google-services.json
 # (`.spatialsdk/tools/verify-probe.sh`). Logcat dumps are kept as evidence.
 .spatialsdk/ui-verify/*.png
 .spatialsdk/ui-verify/*.mp4
+
+# 门禁 B 的原始全量 logcat / dumpsys 转储（体积大、噪声多）。
+# 提交的是筛过标签的 .spatialsdk/ui-verify/taskN-logcat.txt。
+.spatialsdk/ui-verify/*-logcat-full.txt
+.spatialsdk/ui-verify/*-windows.txt

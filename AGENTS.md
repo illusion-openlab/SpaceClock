@@ -57,8 +57,9 @@ z = −R · cos(lat) · sin(modelLon)     // = −y_model
 R = 0.140328, CZ = 0.141627, 标记点抬离球面用 R × 1.02
 ```
 
-地球实体本身也要沿 **Y** 平移 `−CZ` 才能把球心放到视口原点（探针里用实测 `boundsCenter` 动态做的，
-见 `ProbeScene.buildProbe`）。
+地球实体本身也要沿 **Y** 平移 `−CZ` 才能把球心放到视口原点（用实测 `boundsCenter` 动态做，
+现在在 `EarthScene.build` 里）。**注意这只搬实体，不搬实体的局部原点**——挂在 earth 下的标记点
+仍然在球心偏移的那套局部空间里，见下面「标记点定位」。
 
 ### `FGS_AVAILABLE = true`
 
@@ -76,18 +77,90 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 与 `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` 都是必需的；`POST_NOTIFICATIONS` 是**运行时权限**，装机时用
 `pico-cli app install -g` 授予，否则通知不显示（服务本身仍然运行）。
 
-## 探针遗留物（Task 4 / Task 8 要清掉）
+## 探针遗留物（Task 8 要清掉）
 
-- `app/src/main/java/tech/illusion/spaceclock/earth/ProbeScene.kt` — Task 4 删除，换成真正的地球场景 + `GeoMath`
-  - 但**保留它的生命周期形状**：`ProbeHandle` 演示了 `SpatialView` 3D 内容该怎么清理——`initial`
-    （异步 suspend）里 `attach(content, root, earth)`，Compose `onDispose`（同步、主线程）里
-    `dispose()`，内部 `content.removeEntity(root)` 后 `Entity.destroy(recursively = true)`。
-    `Entity.destroy` 是 `@MainThread`，只能在 `onDispose` 这类主线程回调里调。句柄还处理了
-    「窗口在 `loadSuspend` 未完成时就被关掉」的竞态（`attach` 发现已 dispose 就立刻销毁）。
-    Task 4 的 `EarthScene` 直接沿用这个形状。
 - `app/src/main/java/tech/illusion/spaceclock/timing/ProbeService.kt` — Task 8 换成真正的计时服务
-- `content/HomeVolume.kt` 当前只挂探针，没有任何 UI —— Task 1 起替换
-- manifest `windowcontainer.defaultsize = 0.4x0.4x0.4`（meters）是探针尺寸，Task 1 换成设计尺寸
+- ~~`earth/ProbeScene.kt`~~ — Task 4 已删除，换成 `earth/EarthScene.kt` + `earth/EarthSpinSystem.kt`
+- ~~`content/HomeVolume.kt`~~ / ~~manifest 0.4x0.4x0.4~~ — Task 1 已替换
+
+## 地球场景结论（Task 4，模拟器 emulator-5554 实测）
+
+证据：`.spatialsdk/ui-verify/task4-r{1..5}-logcat-full.txt` 与同名 png，推导过程见
+`.superpowers/sdd/2026-08-19-spatial-clock-implementation/task-4-report.md`。
+
+### 引擎方位角关系（这是本任务所有角度结论的地基）
+
+以 `atan2(z, x)`（度）为**引擎方位角**。实测 9 座城市、4 轮、多个自转角，全部满足：
+
+```
+城市方位角 λ = (realLon + 198) mod 360          （GeoMath.LON_OFFSET_DEG）
+spin = s 时该城标记点的引擎方位角 = −(λ + s)
+```
+
+`PIN-READOUT` 里每座城市的实测值与该式的偏差 < 0.1°。观察者（体积窗口正面）在 **+Z**，
+即引擎方位角 **+90°**——Task 0 的截图（spin≈0 时印度居中 = realLon 72°E = λ 270° → −270 ≡ +90）
+和 Task 4 round 1 的截图（spin=162.13 时美洲居中 = realLon 90°W，与 λ_c = 270 − s 吻合）两次独立印证。
+
+### `FRONT_AZIMUTH_DEG = −90`（等价 270），上机校准
+
+`focusOn` 的目标自转角是 `s = FRONT_AZIMUTH_DEG − λ`。**校准方法**：round 1 先填 0 跑，
+实测被转到正面的是 realLon 90.1°W 而不是请求的伦敦（0.13°W），差 90° → 常量补 −90。
+round 2 用 −90 复跑，`FOCUS-LANDED ... azimuth=90.0 (viewer=90.0)`、
+`pos=(−0.1700, 0.0798, 0.0635)`（x 正好等于球心 X），一次到位。
+
+### 标记点定位：局部球心偏移不能漏
+
+标记点是 earth 的子节点，坐标系是 earth 的**局部**空间，而球心在局部 `(0, 0.1416, 0)`
+（Task 0）。`build` 给实体设的 `position` 移动的是整个实体，**不会**把局部原点搬到球心。
+判定用「标记点到球心的距离」而不是截图：实测 9 个标记点全部 `distFromCentre=0.1020`
+= 0.10 × 1.02（PIN_LIFT），与理论值一致到 1e-4 m。漏掉偏移项的话这些距离会散布在 0..0.20。
+落点也有截图直证：`task4-r4-2.png` 里伦敦压在不列颠、迪拜压在波斯湾、约翰内斯堡压在南非、
+北京压在华北——与离线参考渲染 `pin_check2.png` 的落点一致。
+
+### 自转轴只能是引擎 Y
+
+`EulerAngles(0f, deg, 0f).toQuat()`——**yaw 分量**。球心在局部 Y 轴上，绕 Y 转球心原地不动；
+绕 X/Z 会把整个球绕实体原点甩出去（那是公转不是自转）。System tick 实测 `dt≈0.0167s`（60Hz）
+且**跑在主线程**（`TICK-DIAG ... thread=main`），所以 `advance` 里可以直接调 `@MainThread` 实体 API。
+
+### 昼夜暗罩降级到 V2（本任务实测后删除）
+
+原 Step 6 的实现（`createSphere` + 横向 alpha 渐变贴图 `night_mask.png`，`BlendingMode.TRANSPARENT`）
+在设备上**把整个可见半球压暗了，包括白天侧**。对照实测（同一相机、同一窗口位姿、只差有没有暗罩，
+取圆盘内海洋像素的亮度中位数）：
+
+```
+有暗罩 (task4-r2-2/3)：25.4 / 26.8
+无暗罩 (task4-r4-2/3)：35.2 / 36.4      ← 且左右方向是平的，没有残留梯度
+```
+
+三条已定位的原因，V2 重做时从这里接：
+
+1. **`MeshResource.createSphere` 的 UV 原点/绕向没有文档**。把渐变的暗核放在 u=0.75 时，
+   实测它落在网格局部方位角约 50°（±25°，单次截图估计），不是假设的 270°。要么先用一张
+   高对比诊断贴图上机测出这个常量，要么改用自建网格（自己控制 UV）。
+2. **朝向公式的符号错了**。绕 Y 转 yaw 会让局部方位角 θ 落到 `θ − yaw`，所以正确形式是
+   `yaw = θ_暗核 + subsolarLon + 18`，而简报里的 `spinQuat(-azimuth)` 把经度项的符号弄反了。
+3. **设计层面还没定**：本工程的自转是 3°/s 的摆件转速（2 分钟一圈），不是真实地球自转。
+   暗罩若做成 earth 的兄弟节点（简报的选择），暗区在空间里固定、地理从底下转过去，看起来自然，
+   但"暗的正好是夜里的城市"只在某一瞬间成立；若做成子节点跟着自转，地理对得上但暗区像贴在地球上。
+   这个取舍要先定，再谈贴图朝向。
+
+贴图生成器保留在 `.spatialsdk/tools/make-night-mask.py`（2048×1024 RGBA，参数可调），
+`app/src/main/assets/textures/night_mask.png` 已删除——不留没人用的资产进包。
+
+### 清理路径：三条都上机验过
+
+`EarthScene` 自己攥住 `content`/`root`/`earth`（不是 Task 0 `ProbeHandle` 那种「build 正常返回后
+才登记」的形状——那个漏异常路径）。`build` 一 `addEntity` 就登记，异常时 `dispose()` 再重抛；
+`build` 收尾检查 `disposed`，覆盖「dispose 撞上未完成的 `loadSuspend`」。
+
+- 异常路径（把资产路径改成不存在的文件，round 3）：
+  `E earth scene build failed; tearing down` → `I earth scene torn down` → `E earth scene failed`，
+  没有静默泄漏。同时 2D UI 照常工作（地球加载失败不拖垮页面）。
+- 正常路径（优雅关闭，round 4/5）：`KEYCODE_BACK` → `ActivityTaskManager: finishIfPossible
+  reason=app-request` → 155~182ms 后 `I earth scene torn down`（两轮独立复现）。
+  **`pico-cli app stop` 验不出这个**（force-stop 语义，`DisposableEffect` 一行都不跑，Task 1 实测）。
 
 ## tnum 等宽数字结论（Task 2，模拟器 emulator-5554 实测，round 2 含阴性对照）
 

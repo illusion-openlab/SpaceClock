@@ -49,17 +49,25 @@ import java.time.ZoneId
 /**
  * 世界时钟列表页。
  *
- * 已选城市列表和"本地城市"标记本任务先 `remember` 在内存里——`ClockStore` 要到 Task 6 才
- * 存在，那个任务会把两者一起接上持久化，这里不提前建这条管线（见任务简报的歧义决议 1）。
+ * 城市列表、"本地城市"标记和当前选中城市都由 `ClockVolume` 持有并传进来——它们要驱动常驻的
+ * 地球标记点，页面级 `remember` 会随切页销毁（Task 4）。仍然只是内存态，`ClockStore` 到
+ * Task 6 才存在，那个任务会把三者一起接上持久化。
  *
  * 时差换算的参照系用设备的物理时区（`ZoneId.systemDefault()`，和 Home 页 `ZonedDateTime.now()`
  * 同一来源），不是"设为本地"选中的那座城——后者只决定天气卡/状态副行看哪座城的天气
  * （Task 9），跟这一屏"和本地差几小时"里的"本地"是两个不同的概念，混用会让时差数字答非所问。
  *
- * `onSelectCity` 只做 UI 高亮 + 向上回调；Task 4 才会真正驱动地球联动（歧义决议 4）。
+ * [onSelectCity] 除了 UI 高亮，现在还驱动地球把该城转到正面（Task 4）。
  */
 @Composable
-fun WorldPage(onSelectCity: (City) -> Unit = {}) {
+fun WorldPage(
+    cities: List<City>,
+    homeCityName: String,
+    focusedCityName: String?,
+    onAddCity: (City) -> Unit,
+    onSetHome: (City) -> Unit,
+    onSelectCity: (City) -> Unit,
+) {
     var now by remember { mutableStateOf(Instant.now()) }
     // 世界时钟只需要分钟级精度，30 秒一跳足够新鲜又不至于每秒重排一整屏列表。
     // 禁止用 withFrameNanos——它在 WindowContainer 里只触发一次（Global Constraints）。
@@ -71,23 +79,13 @@ fun WorldPage(onSelectCity: (City) -> Unit = {}) {
     }
     val localZoneId = remember { ZoneId.systemDefault().id }
 
-    // 初始展示几座跨时区的代表城市，方便门禁 B 验证"6 行一屏 / 超过 6 城可滚动"两种状态。
-    var selectedCities by remember {
-        mutableStateOf(
-            listOf("北京", "东京", "伦敦", "纽约", "悉尼", "迪拜", "巴黎", "洛杉矶")
-                .mapNotNull { name -> BUILTIN_CITIES.find { it.name == name } },
-        )
-    }
-    // 默认本地城市为北京（歧义决议 1）。
-    var homeCityName by remember { mutableStateOf("北京") }
-    var pinnedCityName by remember { mutableStateOf<String?>(null) }
     var showPicker by remember { mutableStateOf(false) }
 
     if (showPicker) {
         CityPicker(
-            alreadyAdded = remember(selectedCities) { selectedCities.map { it.name }.toSet() },
+            alreadyAdded = remember(cities) { cities.map { it.name }.toSet() },
             onPick = { city ->
-                selectedCities = selectedCities + city
+                onAddCity(city)
                 showPicker = false
             },
             onCancel = { showPicker = false },
@@ -102,7 +100,7 @@ fun WorldPage(onSelectCity: (City) -> Unit = {}) {
         Text("世界时钟", style = typo.titleLarge, color = scheme.labelPrimary)
         Spacer(Modifier.height(8.dp))
 
-        if (selectedCities.isEmpty()) {
+        if (cities.isEmpty()) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
                     "还没有添加城市 —— 点击下方“添加城市”",
@@ -124,18 +122,15 @@ fun WorldPage(onSelectCity: (City) -> Unit = {}) {
                 },
             ) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                    items(items = selectedCities, key = { it.name }) { city ->
+                    items(items = cities, key = { it.name }) { city ->
                         WorldClockRow(
                             city = city,
                             now = now,
                             localZoneId = localZoneId,
                             isHome = city.name == homeCityName,
-                            isPinned = city.name == pinnedCityName,
-                            onSelect = {
-                                pinnedCityName = city.name
-                                onSelectCity(city)
-                            },
-                            onSetHome = { homeCityName = city.name },
+                            isPinned = city.name == focusedCityName,
+                            onSelect = { onSelectCity(city) },
+                            onSetHome = { onSetHome(city) },
                             rowModifier = Modifier.onGloballyPositioned { c ->
                                 Log.i(
                                     "WorldLayout",

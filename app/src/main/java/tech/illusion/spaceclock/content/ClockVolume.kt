@@ -28,17 +28,28 @@ import tech.illusion.spaceclock.content.pages.FocusPage
 import tech.illusion.spaceclock.content.pages.HomePage
 import tech.illusion.spaceclock.content.pages.TimerPage
 import tech.illusion.spaceclock.content.pages.WorldPage
+import tech.illusion.spaceclock.time.BUILTIN_CITIES
+import tech.illusion.spaceclock.time.City
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
 /**
  * 三层 C 布局：背景层是全尺寸的地球 `SpatialView`，上面叠一层 2D UI（左栏时钟 40% + 右侧
- * 玻璃面板 56%，间距 4%），底部再叠一条导航按钮。地球留给 Task 4，本任务先放空壳。
+ * 玻璃面板 56%，间距 4%），底部再叠一条导航按钮。
  */
 @Composable
 fun ClockVolume() {
     var page by remember { mutableStateOf(ClockPage.HOME) }
+
+    // 世界时钟的城市状态提到这一层，原因不是"看起来更整齐"：`WorldPage` 只在 WORLD 页存在，
+    // 页面级 remember 会随切页销毁，而地球的标记点必须在切到其他页之后仍然在（设计文档 §2：
+    // 地球是常驻背景层）。Task 6 的 `ClockStore` 会把这三份状态一起接上持久化，这里仍然只放
+    // 内存态，不提前建那条管线。
+    var selectedCities by remember { mutableStateOf(DEFAULT_SELECTED_CITIES) }
+    var homeCityName by remember { mutableStateOf(DEFAULT_HOME_CITY) }
+    // 点选中的城市：驱动地球把它转到正面，同时给列表行做高亮。
+    var focusedCity by remember { mutableStateOf<City?>(null) }
     // 墙上时间显示用 ZonedDateTime.now()（Global Constraints）：时区在取值源头就显式化，
     // 避免 Task 3 世界时钟 / Task 9 状态行继承隐式默认时区的写法。LeftColumn 的参数类型仍是
     // LocalTime——只换取值来源，不换接口，行为不变（两者都经系统默认时区，精确到秒一致）。
@@ -66,7 +77,7 @@ fun ClockVolume() {
             Log.i("ClockLayout", "root w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
         }
     ) {
-        EarthView(Modifier.fillMaxSize()) // Task 4 填充内容
+        EarthView(cities = selectedCities, focusCity = focusedCity, modifier = Modifier.fillMaxSize())
         Row(Modifier.fillMaxSize().padding(20.dp)) {
             LeftColumn(
                 now,
@@ -88,7 +99,14 @@ fun ClockVolume() {
                     // weather 恒传 null——Task 9 接入 WeatherRepository 前 UI 只看到占位。
                     // cityName 同理是占位值，Task 9 换成真实定位结果，签名不变。
                     ClockPage.HOME -> HomePage(weather = null, cityName = "本地")
-                    ClockPage.WORLD -> WorldPage()
+                    ClockPage.WORLD -> WorldPage(
+                        cities = selectedCities,
+                        homeCityName = homeCityName,
+                        focusedCityName = focusedCity?.name,
+                        onAddCity = { selectedCities = selectedCities + it },
+                        onSetHome = { homeCityName = it.name },
+                        onSelectCity = { focusedCity = it },
+                    )
                     ClockPage.ALARM -> AlarmPage()
                     ClockPage.TIMER -> TimerPage()
                     ClockPage.FOCUS -> FocusPage()
@@ -124,3 +142,15 @@ private fun homeStatusLine(date: LocalDate): String {
     val weekday = WEEKDAY_NAMES_ZH[date.dayOfWeek.value - 1]
     return "$weekday ${date.monthValue}月${date.dayOfMonth}日"
 }
+
+/**
+ * 初始展示的城市。跨时区取样，方便门禁 B 同时验证"6 行一屏"和"超过 6 城可滚动"两种状态
+ * （面板可视区实测 800px、行高 120px，前 6 行进得去）。约翰内斯堡（5 字）刻意排在第 2 位：
+ * 它是列表行长名字截断的现场样本，排在第一屏才验得到。
+ */
+private val DEFAULT_SELECTED_CITIES: List<City> =
+    listOf("北京", "约翰内斯堡", "东京", "伦敦", "纽约", "悉尼", "迪拜", "巴黎", "洛杉矶")
+        .mapNotNull { name -> BUILTIN_CITIES.find { it.name == name } }
+
+/** 默认本地城市（Task 3 歧义决议 1）。 */
+private const val DEFAULT_HOME_CITY = "北京"

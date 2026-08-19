@@ -1,0 +1,260 @@
+########## round r1 ##########
+08-19 16:57:12.601 10306 10306 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 16:57:12.602 10306 10306 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 16:57:12.602 10306 10306 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 16:57:12.602 10306 10306 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 16:57:13.478 10306 10306 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radiusEngine=0.1000
+08-19 16:57:15.395 10306 10306 I EarthScene: TERMINATOR-READOUT utc=08:57 subsolarLon=45.8 azimuth=243.8 yaw=296.3
+08-19 16:57:16.477 10306 10306 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1092,0.0654,0.0492) distFromCentre=0.1020 azimuth=39.0 spin=6.6
+08-19 16:57:16.477 10306 10306 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0902,0.0595,0.0224) distFromCentre=0.1020 azimuth=15.7 spin=6.6
+08-19 16:57:16.478 10306 10306 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2278,0.0798,0.0263) distFromCentre=0.1020 azimuth=155.5 spin=6.6
+08-19 16:57:16.478 10306 10306 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2203,0.0665,-0.0587) distFromCentre=0.1020 azimuth=-130.6 spin=6.6
+08-19 16:57:16.479 10306 10306 I EarthScene: PIN-READOUT 悉尼 lat=-33.87 lon=151.21 pos=(-0.0855,-0.0568,0.0061) distFromCentre=0.1020 azimuth=4.2 spin=6.6
+08-19 16:57:16.479 10306 10306 I EarthScene: PIN-READOUT 迪拜 lat=25.20 lon=55.27 pos=(-0.1862,0.0434,0.0909) distFromCentre=0.1020 azimuth=100.1 spin=6.6
+08-19 16:57:16.480 10306 10306 I EarthScene: PIN-READOUT 巴黎 lat=48.86 lon=2.35 pos=(-0.2298,0.0768,0.0305) distFromCentre=0.1020 azimuth=153.0 spin=6.6
+08-19 16:57:16.480 10306 10306 I EarthScene: PIN-READOUT 洛杉矶 lat=34.05 lon=-118.24 pos=(-0.1647,0.0571,-0.0843) distFromCentre=0.1020 azimuth=-86.4 spin=6.6
+08-19 16:57:16.480 10306 10306 I EarthScene: PIN-READOUT 约翰内斯堡 lat=-26.20 lon=28.05 pos=(-0.2255,-0.0450,0.0728) distFromCentre=0.1020 azimuth=127.3 spin=6.6
+08-19 16:57:20.260 10306 10306 I EarthScene: FOCUS-READOUT city=伦敦 lon=-0.13 cityAzimuth=197.87 targetSpin=162.13 fromSpin=20.95
+08-19 16:57:21.248 10306 10306 I EarthScene: FOCUS-LANDED city=伦敦 spin=162.13 pos=(-0.2195,0.0798,0.0398) azimuth=141.2 (viewer=90.0) thread=main
+---- 关闭/生命周期相关 ----
+08-19 16:57:09.059   827 29426 I ContainerManager_STATE: container state changed, from none to create, id=54, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=none, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203342, contentId=2429813323203341, caller (0, pkg=null), taskId: 104, topActivity: null, cornerRadius: -1
+08-19 16:57:09.078   827 29426 I ContainerManager_STATE: container state changed, from create to foreground, id=54, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=create, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203342, contentId=2429813323203341, caller (0, pkg=null), taskId: 104, topActivity: ActivityRecord{14615490 u0 tech.illusion.spaceclock/.platform.LaunchActivity t105}, cornerRadius: -1
+08-19 16:57:40.979   827  9244 I ContainerManager_STATE: container state changed, from foreground to destroyed, id=54, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=foreground, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203342, contentId=2429813323203341, caller (0, pkg=null), taskId: 104, topActivity: null, cornerRadius: -1
+---- 同时在线的其它会话窗口（截图可信度） ----
+Window{36b3d1e u0 Sys2996:tech.illusion.spacehop/tech.illusion.spacehop.platform.LaunchActivity}
+Window{55be329 u0 com.picoxr.systemui}
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{622c9b3 u0 com.picoxr.systemui}
+Window{68cfe01 u0 Sys2996:tech.illusion.spacehop/tech.illusion.spacehop.platform.LaunchActivity}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{9b5b2fe u0 tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{cc37761 u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+Window{e36004 u0 tech.illusion.spacehop/tech.illusion.spacehop.platform.LaunchActivity}
+
+########## round r2 ##########
+08-19 17:03:51.362 11359 11359 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 17:03:51.363 11359 11359 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 17:03:51.363 11359 11359 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=悉尼 h=120 y=625.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 17:03:51.364 11359 11359 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 17:03:51.364 11359 11359 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 17:03:51.485 11359 11359 I EarthScene: TICK-DIAG n=1 dt=0.0282 accum=0.03 thread=main
+08-19 17:03:51.589 11359 11359 I EarthScene: TICK-DIAG n=2 dt=0.1036 accum=0.13 thread=main
+08-19 17:03:51.604 11359 11359 I EarthScene: TICK-DIAG n=3 dt=0.0153 accum=0.15 thread=main
+08-19 17:03:51.618 11359 11359 I EarthScene: TICK-DIAG n=4 dt=0.0140 accum=0.16 thread=main
+08-19 17:03:51.635 11359 11359 I EarthScene: TICK-DIAG n=5 dt=0.0166 accum=0.18 thread=main
+08-19 17:03:51.984 11359 11359 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radiusEngine=0.1000
+08-19 17:03:52.061 11359 11359 I EarthScene: TERMINATOR-READOUT utc=09:03 subsolarLon=44.3 azimuth=242.3 yaw=297.8
+08-19 17:03:52.129 11359 11359 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1150,0.0654,0.0556) distFromCentre=0.1020 azimuth=45.3 spin=0.3
+08-19 17:03:52.129 11359 11359 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0932,0.0595,0.0311) distFromCentre=0.1020 azimuth=22.0 spin=0.3
+08-19 17:03:52.129 11359 11359 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2303,0.0798,0.0198) distFromCentre=0.1020 azimuth=161.8 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2136,0.0665,-0.0639) distFromCentre=0.1020 azimuth=-124.3 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 悉尼 lat=-33.87 lon=151.21 pos=(-0.0867,-0.0568,0.0154) distFromCentre=0.1020 azimuth=10.5 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 迪拜 lat=25.20 lon=55.27 pos=(-0.1961,0.0434,0.0885) distFromCentre=0.1020 azimuth=106.4 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 巴黎 lat=48.86 lon=2.35 pos=(-0.2328,0.0768,0.0237) distFromCentre=0.1020 azimuth=159.4 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 洛杉矶 lat=34.05 lon=-118.24 pos=(-0.1554,0.0571,-0.0832) distFromCentre=0.1020 azimuth=-80.1 spin=0.3
+08-19 17:03:52.130 11359 11359 I EarthScene: PIN-READOUT 约翰内斯堡 lat=-26.20 lon=28.05 pos=(-0.2332,-0.0450,0.0662) distFromCentre=0.1020 azimuth=133.7 spin=0.3
+08-19 17:03:52.886 11359 11359 I EarthScene: TICK-DIAG n=60 dt=0.0235 accum=1.43 thread=main
+08-19 17:03:54.246 11359 11359 I EarthScene: TICK-DIAG n=120 dt=0.0165 accum=2.79 thread=main
+08-19 17:03:55.718 11359 11359 I EarthScene: TICK-DIAG n=180 dt=0.0168 accum=4.26 thread=main
+08-19 17:03:57.151 11359 11359 I EarthScene: TICK-DIAG n=240 dt=0.0165 accum=5.69 thread=main
+08-19 17:03:58.435 11359 11359 I EarthScene: TICK-DIAG n=300 dt=0.0171 accum=6.98 thread=main
+08-19 17:03:58.460 11359 11359 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 17:03:58.460 11359 11359 I WorldLayout: row city=东京 h=120 y=262.0
+08-19 17:03:58.460 11359 11359 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-19 17:03:58.460 11359 11359 I WorldLayout: row city=纽约 h=120 y=504.0
+08-19 17:03:58.461 11359 11359 I WorldLayout: row city=悉尼 h=120 y=625.0
+08-19 17:03:58.461 11359 11359 I WorldLayout: row city=迪拜 h=120 y=746.0
+08-19 17:03:58.461 11359 11359 I WorldLayout: row city=巴黎 h=120 y=867.0
+08-19 17:03:58.468 11359 11359 I EarthScene: FOCUS-READOUT city=伦敦 lon=-0.13 cityAzimuth=197.87 targetSpin=72.13 fromSpin=19.50
+08-19 17:03:59.085 11359 11359 I EarthScene: FOCUS-LANDED city=伦敦 appliedSpin=72.13 pos=(-0.1700,0.0798,0.0635) azimuth=90.0 (viewer=90.0)
+08-19 17:03:59.618 11359 11359 I EarthScene: TICK-DIAG n=360 dt=0.0167 accum=8.16 thread=main
+08-19 17:04:00.951 11359 11359 I EarthScene: TICK-DIAG n=420 dt=0.0167 accum=9.49 thread=main
+08-19 17:04:02.563 11359 11359 I EarthScene: TICK-DIAG n=480 dt=0.0384 accum=11.11 thread=main
+08-19 17:04:03.985 11359 11359 I EarthScene: TICK-DIAG n=540 dt=0.0127 accum=12.53 thread=main
+08-19 17:04:05.518 11359 11359 I EarthScene: TICK-DIAG n=600 dt=0.0167 accum=14.06 thread=main
+08-19 17:04:06.924 11359 11359 I EarthScene: TICK-DIAG n=660 dt=0.0111 accum=15.47 thread=main
+08-19 17:04:08.407 11359 11359 I EarthScene: TICK-DIAG n=720 dt=0.0168 accum=16.95 thread=main
+08-19 17:04:10.085 11359 11359 I EarthScene: TICK-DIAG n=780 dt=0.0164 accum=18.63 thread=main
+08-19 17:04:11.893 11359 11359 I EarthScene: TICK-DIAG n=840 dt=0.0143 accum=20.44 thread=main
+08-19 17:04:13.752 11359 11359 I EarthScene: TICK-DIAG n=900 dt=0.0167 accum=22.29 thread=main
+08-19 17:04:15.402 11359 11359 I EarthScene: TICK-DIAG n=960 dt=0.0556 accum=23.95 thread=main
+08-19 17:04:17.259 11359 11359 I EarthScene: TICK-DIAG n=1020 dt=0.0469 accum=25.80 thread=main
+08-19 17:04:18.668 11359 11359 I EarthScene: TICK-DIAG n=1080 dt=0.0167 accum=27.21 thread=main
+---- 关闭/生命周期相关 ----
+08-19 17:03:50.447   827 25811 I ContainerManager_STATE: container state changed, from none to create, id=55, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=none, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203353, contentId=2429813323203352, caller (0, pkg=null), taskId: 106, topActivity: null, cornerRadius: -1
+08-19 17:03:50.449   827 25811 I ContainerManager_STATE: container state changed, from create to foreground, id=55, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=create, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203353, contentId=2429813323203352, caller (0, pkg=null), taskId: 106, topActivity: ActivityRecord{51912020 u0 tech.illusion.spaceclock/.platform.LaunchActivity t107}, cornerRadius: -1
+08-19 17:04:19.192   827  1136 I ContainerManager_STATE: container state changed, from foreground to destroyed, id=55, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=foreground, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203353, contentId=2429813323203352, caller (0, pkg=null), taskId: 106, topActivity: null, cornerRadius: -1
+---- 同时在线的其它会话窗口（截图可信度） ----
+Window{55be329 u0 com.picoxr.systemui}
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{a898067 u0 com.picoxr.systemui}
+Window{cc37761 u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+Window{ee024be u0 tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+
+########## round r3 ##########
+08-19 17:15:11.137 13386 13386 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 17:15:11.141 13386 13386 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 17:15:11.141 13386 13386 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 17:15:11.141 13386 13386 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-19 17:15:11.141 13386 13386 I WorldLayout: row city=北京 h=120 y=141.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=约翰内斯堡 h=120 y=262.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=东京 h=120 y=383.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=伦敦 h=120 y=504.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=纽约 h=120 y=625.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=悉尼 h=120 y=746.0
+08-19 17:15:11.142 13386 13386 I WorldLayout: row city=迪拜 h=120 y=867.0
+08-19 17:15:11.142 13386 13386 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 17:15:11.261 13386 13386 E EarthScene: earth scene build failed; tearing down
+08-19 17:15:11.261 13386 13386 E EarthScene: com.pico.spatial.core.ecs.resource.ResourceLoadingException: {error code: NO_ENTRY, message: File not found: asset://models/NoSuchEarth.usdz}
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion$createModelLoadCallback$callback$1.onLoadFailure(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.callback.JNICallback.onCallback(JNICallback.java:57)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.ecs.Entity.nativeLoadModelFromAssetsAsync(Native Method)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.ecs.Entity.loadFromAssetsAsync(Entity.java:192)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.a(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion.access$loadAsync(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3380)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.invokeSuspend(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:20)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.invoke(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:2)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:42)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:164)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion.loadSuspend(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:2)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.earth.EarthScene.build(EarthScene.kt:140)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invokeSuspend(EarthView.kt:63)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invoke(Unknown Source:13)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invoke(Unknown Source:6)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.pico.spatial.ui.foundation.content.SpatialViewKt$SpatialView$8$1$2.invokeSuspend(SpatialView.kt:142)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at android.os.Handler.handleCallback(Handler.java:995)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at android.os.Handler.dispatchMessage(Handler.java:103)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at android.os.Looper.loopOnce(Looper.java:284)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at android.os.Looper.loop(Looper.java:384)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at android.app.ActivityThread.main(ActivityThread.java:10322)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at java.lang.reflect.Method.invoke(Native Method)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:621)
+08-19 17:15:11.261 13386 13386 E EarthScene: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:946)
+08-19 17:15:11.272 13386 13386 I EarthScene: earth scene torn down
+08-19 17:15:11.273 13386 13386 E EarthScene: earth scene failed
+08-19 17:15:11.273 13386 13386 E EarthScene: com.pico.spatial.core.ecs.resource.ResourceLoadingException: {error code: NO_ENTRY, message: File not found: asset://models/NoSuchEarth.usdz}
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion$createModelLoadCallback$callback$1.onLoadFailure(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.callback.JNICallback.onCallback(JNICallback.java:57)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.ecs.Entity.nativeLoadModelFromAssetsAsync(Native Method)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.foundation.extensions.spatial.ecs.Entity.loadFromAssetsAsync(Entity.java:192)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.a(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion.access$loadAsync(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:3380)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.invokeSuspend(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:20)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.u.invoke(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:2)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:42)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:164)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.core.ecs.Entity$Companion.loadSuspend(r8-map-id-e3910da203233012521033eee5ce1d34c06cf216006cb0c0249d2920b9ff2726:2)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.earth.EarthScene.build(EarthScene.kt:140)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invokeSuspend(EarthView.kt:63)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invoke(Unknown Source:13)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at tech.illusion.spaceclock.content.EarthViewKt$EarthView$4$1.invoke(Unknown Source:6)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.pico.spatial.ui.foundation.content.SpatialViewKt$SpatialView$8$1$2.invokeSuspend(SpatialView.kt:142)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at android.os.Handler.handleCallback(Handler.java:995)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at android.os.Handler.dispatchMessage(Handler.java:103)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at android.os.Looper.loopOnce(Looper.java:284)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at android.os.Looper.loop(Looper.java:384)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at android.app.ActivityThread.main(ActivityThread.java:10322)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at java.lang.reflect.Method.invoke(Native Method)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:621)
+08-19 17:15:11.273 13386 13386 E EarthScene: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:946)
+---- 关闭/生命周期相关 ----
+08-19 17:15:06.926   827   909 I ContainerManager_STATE: container state changed, from none to create, id=57, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=none, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203378, contentId=2429813323203377, caller (0, pkg=null), taskId: 110, topActivity: null, cornerRadius: -1
+08-19 17:15:06.948   827   909 I ContainerManager_STATE: container state changed, from create to foreground, id=57, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=create, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203378, contentId=2429813323203377, caller (0, pkg=null), taskId: 110, topActivity: ActivityRecord{103986860 u0 tech.illusion.spaceclock/.platform.LaunchActivity t111}, cornerRadius: -1
+08-19 17:15:35.807   827   841 I ContainerManager_STATE: container state changed, from foreground to destroyed, id=57, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=foreground, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203378, contentId=2429813323203377, caller (0, pkg=null), taskId: 110, topActivity: null, cornerRadius: -1
+---- 同时在线的其它会话窗口（截图可信度） ----
+Window{119f3b4 u0 tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+Window{55be329 u0 com.picoxr.systemui}
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{8c076d3 u0 com.picoxr.systemui}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{cc37761 u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+
+########## round r4 ##########
+08-19 17:17:06.571 13781 13781 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 17:17:06.572 13781 13781 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 17:17:06.572 13781 13781 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 17:17:06.572 13781 13781 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 17:17:07.463 13781 13781 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radius=0.1000
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1124,0.0654,0.0530) distFromCentre=0.1020 azimuth=42.6 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 约翰内斯堡 lat=-26.20 lon=28.05 pos=(-0.2300,-0.0450,0.0691) distFromCentre=0.1020 azimuth=131.0 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0918,0.0595,0.0274) distFromCentre=0.1020 azimuth=19.3 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2293,0.0798,0.0226) distFromCentre=0.1020 azimuth=159.1 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2165,0.0665,-0.0618) distFromCentre=0.1020 azimuth=-127.0 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 悉尼 lat=-33.87 lon=151.21 pos=(-0.0861,-0.0568,0.0115) distFromCentre=0.1020 azimuth=7.8 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 迪拜 lat=25.20 lon=55.27 pos=(-0.1919,0.0434,0.0897) distFromCentre=0.1020 azimuth=103.7 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 巴黎 lat=48.86 lon=2.35 pos=(-0.2316,0.0768,0.0266) distFromCentre=0.1020 azimuth=156.7 spin=3.0
+08-19 17:17:08.458 13781 13781 I EarthScene: PIN-READOUT 洛杉矶 lat=34.05 lon=-118.24 pos=(-0.1593,0.0571,-0.0838) distFromCentre=0.1020 azimuth=-82.8 spin=3.0
+08-19 17:17:35.146 13781 13781 I EarthScene: earth scene torn down
+---- 关闭/生命周期相关 ----
+08-19 17:17:05.473   827  8093 I ContainerManager_STATE: container state changed, from none to create, id=58, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=none, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203389, contentId=2429813323203388, caller (0, pkg=null), taskId: 112, topActivity: null, cornerRadius: -1
+08-19 17:17:05.475   827  8093 I ContainerManager_STATE: container state changed, from create to foreground, id=58, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=create, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203389, contentId=2429813323203388, caller (0, pkg=null), taskId: 112, topActivity: ActivityRecord{236823808 u0 tech.illusion.spaceclock/.platform.LaunchActivity t113}, cornerRadius: -1
+08-19 17:17:34.964   827   912 I ActivityTaskManager: finishIfPossible r=ActivityRecord{236823808 u0 tech.illusion.spaceclock/.platform.LaunchActivity t113}, result=0, resultData=null, reason=app-request
+08-19 17:17:34.965   827   912 W BLASTSyncEngine: create SyncGroup [213] [Transition-CLOSE]com.android.server.wm.BLASTSyncEngine$SyncGroup.<init>:0 com.android.server.wm.BLASTSyncEngine.prepareSyncSet:485 com.android.server.wm.BLASTSyncEngine.startSyncSet:490 com.android.server.wm.Transition.startCollecting:739 com.android.server.wm.TransitionController.moveToCollecting:343 com.android.server.wm.TransitionController.createTransition:324 com.android.server.wm.TransitionController.requestCloseTransitionIfNeeded:904 com.android.server.wm.ActivityRecord.finishIfPossible:3833 com.android.server.wm.ActivityClientController.finishActivity:556 android.app.IActivityClientController$Stub.onTransact:802 com.android.server.wm.ActivityClientController.onTransact:179 android.os.Binder.execTransactInternal:1430 android.os.Binder.execTransact:1374 <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> 
+---- 同时在线的其它会话窗口（截图可信度） ----
+Window{38b7ef9 u0 tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+Window{55be329 u0 com.picoxr.systemui}
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{6bb7ae4 u0 com.picoxr.systemui}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{cc37761 u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+
+########## round r5 (HEAD 二进制复核) ##########
+08-19 17:30:33.139 16543 16543 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-19 17:30:33.147 16543 16543 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-19 17:30:33.149 16543 16543 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-19 17:30:33.149 16543 16543 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-19 17:30:35.976 16543 16543 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radius=0.1000
+08-19 17:30:37.098 16543 16543 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1123,0.0654,0.0529) distFromCentre=0.1020 azimuth=42.5 spin=3.1
+08-19 17:30:37.099 16543 16543 I EarthScene: PIN-READOUT 约翰内斯堡 lat=-26.20 lon=28.05 pos=(-0.2299,-0.0450,0.0692) distFromCentre=0.1020 azimuth=130.9 spin=3.1
+08-19 17:30:37.100 16543 16543 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0918,0.0595,0.0273) distFromCentre=0.1020 azimuth=19.2 spin=3.1
+08-19 17:30:37.100 16543 16543 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2293,0.0798,0.0227) distFromCentre=0.1020 azimuth=159.0 spin=3.1
+08-19 17:30:37.102 16543 16543 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2166,0.0665,-0.0617) distFromCentre=0.1020 azimuth=-127.1 spin=3.1
+08-19 17:30:37.104 16543 16543 I EarthScene: PIN-READOUT 悉尼 lat=-33.87 lon=151.21 pos=(-0.0861,-0.0568,0.0113) distFromCentre=0.1020 azimuth=7.7 spin=3.1
+08-19 17:30:37.104 16543 16543 I EarthScene: PIN-READOUT 迪拜 lat=25.20 lon=55.27 pos=(-0.1918,0.0434,0.0897) distFromCentre=0.1020 azimuth=103.6 spin=3.1
+08-19 17:30:37.105 16543 16543 I EarthScene: PIN-READOUT 巴黎 lat=48.86 lon=2.35 pos=(-0.2316,0.0768,0.0267) distFromCentre=0.1020 azimuth=156.6 spin=3.1
+08-19 17:30:37.105 16543 16543 I EarthScene: PIN-READOUT 洛杉矶 lat=34.05 lon=-118.24 pos=(-0.1595,0.0571,-0.0839) distFromCentre=0.1020 azimuth=-82.9 spin=3.1
+08-19 17:31:01.235 16543 16543 I EarthScene: earth scene torn down
+---- 关闭/生命周期相关 ----
+08-19 17:30:28.450   827  6930 I ContainerManager_STATE: container state changed, from none to create, id=65, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=none, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203473, contentId=2429813323203472, caller (0, pkg=null), taskId: 122, topActivity: null, cornerRadius: -1
+08-19 17:30:28.493   827  6930 I ContainerManager_STATE: container state changed, from create to foreground, id=65, pkg=tech.illusion.spaceclock, name=SpaceClockVolume, v=false, f=false, t=window_group, c=none, life=create, size(1500, 1125, 750), spatialApp=true, entityId=2429813323203473, contentId=2429813323203472, caller (0, pkg=null), taskId: 122, topActivity: ActivityRecord{206246030 u0 tech.illusion.spaceclock/.platform.LaunchActivity t123}, cornerRadius: -1
+08-19 17:31:01.080   827  6930 I ActivityTaskManager: finishIfPossible r=ActivityRecord{206246030 u0 tech.illusion.spaceclock/.platform.LaunchActivity t123}, result=0, resultData=null, reason=app-request
+08-19 17:31:01.085   827  6930 W BLASTSyncEngine: create SyncGroup [229] [Transition-CLOSE]com.android.server.wm.BLASTSyncEngine$SyncGroup.<init>:0 com.android.server.wm.BLASTSyncEngine.prepareSyncSet:485 com.android.server.wm.BLASTSyncEngine.startSyncSet:490 com.android.server.wm.Transition.startCollecting:739 com.android.server.wm.TransitionController.moveToCollecting:343 com.android.server.wm.TransitionController.createTransition:324 com.android.server.wm.TransitionController.requestCloseTransitionIfNeeded:904 com.android.server.wm.ActivityRecord.finishIfPossible:3833 com.android.server.wm.ActivityClientController.finishActivity:556 android.app.IActivityClientController$Stub.onTransact:802 com.android.server.wm.ActivityClientController.onTransact:179 android.os.Binder.execTransactInternal:1430 android.os.Binder.execTransact:1374 <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> <bottom of call stack> 
+---- 同时在线的其它会话窗口（截图可信度） ----
+Window{166b23b u0 com.picoxr.systemui/com.picoxr.systemui.platform.MainActivity}
+Window{3aefbc u0 tech.illusion.spaceclock/tech.illusion.spaceclock.platform.LaunchActivity}
+Window{55be329 u0 com.picoxr.systemui}
+Window{5f70c12 u0 com.picoxr.systemui}
+Window{6e2189b u0 com.picoxr.systemui}
+Window{7f9a29b u0 com.picoxr.systemui}
+Window{94e99dc u0 com.pxr.scenarioprovider/com.unity3d.player.UnityPlayerActivity}
+Window{a2bc00a u0 com.picoxr.systemui}
+Window{e2f7eac u0 com.picoxr.launcher/com.picoxr.launcher.MainActivity}
+
