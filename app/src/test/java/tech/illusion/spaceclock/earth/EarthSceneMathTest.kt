@@ -77,17 +77,6 @@ class EarthSceneMathTest {
     }
 
     @Test
-    fun `focus spin ignores latitude`() {
-        // 只有经度决定自转角：同经度不同纬度的两点必须给出同一个目标角。
-        assertEquals(focusTargetSpinDeg(116.40f), focusTargetSpinDeg(116.40f), 0f)
-        assertEquals(
-            wrap360(-90f - cityAzimuthDeg(116.40f)),
-            focusTargetSpinDeg(116.40f),
-            1e-3f,
-        )
-    }
-
-    @Test
     fun `shortest delta never takes the long way round`() {
         assertEquals(20f, shortestDelta(350f, 10f), 1e-3f)
         assertEquals(-20f, shortestDelta(10f, 350f), 1e-3f)

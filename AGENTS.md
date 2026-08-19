@@ -85,8 +85,10 @@ manifest 里 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_SPECIAL_USE` / `POST_NOT
 
 ## 地球场景结论（Task 4，模拟器 emulator-5554 实测）
 
-证据：`.spatialsdk/ui-verify/task4-r{1..5}-logcat-full.txt` 与同名 png，推导过程见
+证据：`.spatialsdk/ui-verify/task4-logcat.txt`（按标签筛过、已提交）与
+`.spatialsdk/ui-verify/task4-r{1..5}-*.png`（已提交），推导过程见
 `.superpowers/sdd/2026-08-19-spatial-clock-implementation/task-4-report.md`。
+（原始全量 logcat `task4-r{1..5}-logcat-full.txt` 被 `.gitignore:39` 忽略，不在仓库里，别指过去。）
 
 ### 引擎方位角关系（这是本任务所有角度结论的地基）
 
@@ -149,18 +151,25 @@ round 2 用 −90 复跑，`FOCUS-LANDED ... azimuth=90.0 (viewer=90.0)`、
 贴图生成器保留在 `.spatialsdk/tools/make-night-mask.py`（2048×1024 RGBA，参数可调），
 `app/src/main/assets/textures/night_mask.png` 已删除——不留没人用的资产进包。
 
-### 清理路径：三条都上机验过
+### 清理路径：两条上机验过 + 竞态路径仅代码审查
 
 `EarthScene` 自己攥住 `content`/`root`/`earth`（不是 Task 0 `ProbeHandle` 那种「build 正常返回后
 才登记」的形状——那个漏异常路径）。`build` 一 `addEntity` 就登记，异常时 `dispose()` 再重抛；
-`build` 收尾检查 `disposed`，覆盖「dispose 撞上未完成的 `loadSuspend`」。
+`build` 唯一的挂起点（`loadSuspend`）恢复后立即检查 `disposed` 并拆除，覆盖「dispose 撞上未完成
+的 `loadSuspend`」；方法收尾处再留一次兜底检查。
 
-- 异常路径（把资产路径改成不存在的文件，round 3）：
+- 异常路径（把资产路径改成不存在的文件，round 3，**上机验过**）：
   `E earth scene build failed; tearing down` → `I earth scene torn down` → `E earth scene failed`，
   没有静默泄漏。同时 2D UI 照常工作（地球加载失败不拖垮页面）。
-- 正常路径（优雅关闭，round 4/5）：`KEYCODE_BACK` → `ActivityTaskManager: finishIfPossible
-  reason=app-request` → 155~182ms 后 `I earth scene torn down`（两轮独立复现）。
+- 正常路径（优雅关闭，round 4/5，**上机验过**）：`KEYCODE_BACK` → `ActivityTaskManager:
+  finishIfPossible reason=app-request` → 155~182ms 后 `I earth scene torn down`（两轮独立复现）。
   **`pico-cli app stop` 验不出这个**（force-stop 语义，`DisposableEffect` 一行都不跑，Task 1 实测）。
+- 竞态路径（`dispose()` 撞上未完成的 `loadSuspend`）：**只有代码路径审查 + 日志钩子（`"dispose
+  arrived during load; tearing down immediately"`），没有运行时证据**。触发需要在 12.8MB usdz
+  解码完成前关窗口，模拟器上装机→启动→首帧的时序不受控，两轮实施都没找到可靠的触发手段。
+  Fix round 复核过代码本身：修复前 `build` 恢复后直接往已被销毁的 `root`/`earth` 上继续
+  `addChild` / `getVisualBounds` / 写变换，只在方法收尾才检查 `disposed`（迟了一整段同步代码）；
+  已改成 `loadSuspend` 恢复后立即检查并 `return`，收尾检查保留作二层兜底。
 
 ## tnum 等宽数字结论（Task 2，模拟器 emulator-5554 实测，round 2 含阴性对照）
 

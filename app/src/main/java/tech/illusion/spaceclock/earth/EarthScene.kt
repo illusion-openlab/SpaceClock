@@ -79,7 +79,8 @@ private const val FRONT_AZIMUTH_DEG = -VIEWER_AZIMUTH_DEG
  * **同步主线程**，两边要动同一批实体，所以场景对象自己攥住 `content` / `root` / `earth`，
  * 而不是让调用方分开保管——Task 0 探针的 `ProbeHandle` 就是因为「只在 build 正常返回后才登记」
  * 而漏掉了异常路径（Task 0 review 的延后 Minor）。这里 [build] 一创建就登记，
- * 并覆盖三条清理路径：正常、`dispose()` 撞上未完成的 `loadSuspend`、[build] 中途抛异常。
+ * 并覆盖三条清理路径：正常、`dispose()` 撞上 [build] 唯一的挂起点（`loadSuspend`）、[build]
+ * 中途抛异常——`loadSuspend` 恢复后立即检查 [disposed] 并拆除，不是等 [build] 收尾才发现。
  */
 class EarthScene {
 
@@ -96,7 +97,10 @@ class EarthScene {
     /** 城市和它的标记点实体一起存：落点日志要能把 [City] 映射回实体。 */
     private val pins = mutableListOf<Pin>()
 
-    /** [dispose] 已经跑过。[build] 在每个挂起点之后据此自行拆除，避免竞态泄漏。 */
+    /**
+     * [dispose] 已经跑过。[build] 只有一个挂起点（`loadSuspend`），恢复后立即据此拆除；
+     * [build] 收尾处还留了一次兜底检查，覆盖挂起点之后、方法返回之前的其余同步代码。
+     */
     @Volatile
     private var disposed = false
 
@@ -139,6 +143,14 @@ class EarthScene {
 
             val earth = Entity.loadSuspend(EARTH_ASSET)
             this.earth = earth
+            if (disposed) {
+                // dispose() 在 loadSuspend 挂起期间到达：teardown() 已经把 root/earth 摘掉销毁、
+                // 字段清空。继续往下走会对着已销毁的实体调 addChild / getVisualBounds / 写变换，
+                // 所以在这唯一的挂起点恢复后立即检查并退出——不要等到方法收尾才发现。
+                Log.i(TAG, "dispose arrived during load; tearing down immediately")
+                teardown()
+                return
+            }
             root.addChild(earth)
 
             // 必须在施加任何变换**之前**测量：此刻实体 transform 是单位矩阵（Task 0 实测），
@@ -180,8 +192,9 @@ class EarthScene {
             throw t
         }
         if (disposed) {
-            // dispose() 在 loadSuspend 挂起期间就到了：那次 teardown 只清到当时已登记的东西，
-            // 之后建出来的要在这里自行拆除。
+            // 兜底守卫：真正的竞态窗口（dispose() 撞上 loadSuspend 挂起）已经在挂起点恢复后
+            // 立即处理并 return 了，不会走到这里。这里补的是防御性的第二层——万一以后有人在
+            // try 块里再加一个挂起点，或者 disposed 的赋值/读取时序有别的路径，也不会漏拆。
             Log.i(TAG, "build finished after dispose; tearing down immediately")
             teardown()
         }
