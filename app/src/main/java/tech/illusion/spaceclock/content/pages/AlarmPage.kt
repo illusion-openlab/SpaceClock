@@ -1,6 +1,5 @@
 package tech.illusion.spaceclock.content.pages
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import com.pico.spatial.ui.design.Switch
 import com.pico.spatial.ui.design.Text
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.Repeat
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 
 /**
@@ -123,11 +123,10 @@ fun AlarmPage(alarms: List<Alarm>, onAlarmsChanged: (List<Alarm>) -> Unit) {
                 isNewAlarm = true
             },
             modifier = Modifier.fillMaxWidth().onGloballyPositioned { c ->
-                Log.i(
-                    "AlarmLayout",
+                debugLog("AlarmLayout") {
                     "newAlarm w=${c.size.width} h=${c.size.height} " +
-                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                )
+                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                }
             },
             colors = ButtonDefaults.buttonColors(containerColor = scheme.fillTertiary),
         ) {
@@ -148,11 +147,10 @@ private fun NumberStepper(label: String, value: Int, onChange: (Int) -> Unit) {
         Button(
             onClick = { onChange(value - 1) },
             modifier = Modifier.onGloballyPositioned { c ->
-                Log.i(
-                    "AlarmLayout",
+                debugLog("AlarmLayout") {
                     "$label- w=${c.size.width} h=${c.size.height} " +
-                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                )
+                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = scheme.fillTertiary,
@@ -168,11 +166,10 @@ private fun NumberStepper(label: String, value: Int, onChange: (Int) -> Unit) {
         Button(
             onClick = { onChange(value + 1) },
             modifier = Modifier.onGloballyPositioned { c ->
-                Log.i(
-                    "AlarmLayout",
+                debugLog("AlarmLayout") {
                     "$label+ w=${c.size.width} h=${c.size.height} " +
-                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                )
+                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = scheme.fillTertiary,
@@ -310,11 +307,10 @@ private fun AlarmEditor(
             Button(
                 onClick = { onSave(alarm.copy(hour = hour, minute = minute, repeat = repeat)) },
                 modifier = Modifier.onGloballyPositioned { c ->
-                    Log.i(
-                        "AlarmLayout",
+                    debugLog("AlarmLayout") {
                         "save w=${c.size.width} h=${c.size.height} " +
-                            "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                    )
+                            "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                    }
                 },
             ) { Text("保存") }
             Button(

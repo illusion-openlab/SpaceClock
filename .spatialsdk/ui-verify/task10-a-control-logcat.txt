@@ -1,0 +1,79 @@
+--------- beginning of main
+08-20 04:43:54.423   827 22712 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 04:43:54.423   827 22712 E ActivityManager: java.lang.Throwable
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 04:43:54.423   827 22712 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 04:43:54.535   827   911 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 04:43:54.535   827   911 E ActivityManager: java.lang.Throwable
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 04:43:54.535   827   911 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-20 04:43:54.558   827   827 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-20 04:43:54.583   827   848 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-20 04:43:55.240   827   867 W ActivityManager: Slow operation: 52ms so far, now at startProcess: returned from zygote!
+08-20 04:43:55.241   827   867 W ActivityManager: Slow operation: 53ms so far, now at startProcess: done updating battery stats
+08-20 04:43:55.247   827   867 W ActivityManager: Slow operation: 59ms so far, now at startProcess: building log message
+08-20 04:43:55.247   827   867 W ActivityManager: Slow operation: 59ms so far, now at startProcess: starting to update pids map
+08-20 04:43:55.248   827   867 W ActivityManager: Slow operation: 59ms so far, now at startProcess: done updating pids map
+08-20 04:43:55.386   827  1095 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-20 04:43:55.436   827  5776 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 04:43:58.342   827   912 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 04:43:58.661 15381 15381 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 04:43:58.673 15381 15381 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 04:43:58.673 15381 15381 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 04:43:58.674 15381 15381 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 04:43:58.674 15381 15381 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 04:43:58.674 15381 15381 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 04:43:58.674 15381 15381 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 04:43:58.675 15381 15381 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 04:43:58.675 15381 15381 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 04:43:58.810 15381 15381 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-20 04:43:58.859 15381 15381 I TimingService: startForeground OK text=闹钟守候中
+08-20 04:43:58.862 15381 15381 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 04:43:58.928 15381 15381 I ClockVolume: timing service connected
+08-20 04:44:00.420 15381 15432 I WeatherRepository: HTTP-STATUS city=北京 code=200
+08-20 04:44:00.422 15381 15432 I WeatherRepository: HTTP-BODY city=北京 temp=23.7 code=0 high=31.7 low=23.4 fetchedAtEpochSec=1787172240
+08-20 04:44:00.424 15381 15432 I WeatherRepository: WEATHER-SNAPSHOT city=北京 source=network temp=24 fetchedAtEpochSec=1787172240
+08-20 04:44:00.839 15381 15381 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radius=0.1000
+08-20 04:44:00.878 15381 15432 I WeatherRepository: HTTP-STATUS city=东京 code=200
+08-20 04:44:00.880 15381 15432 I WeatherRepository: HTTP-BODY city=东京 temp=23.6 code=1 high=30.5 low=23.6 fetchedAtEpochSec=1787172240
+08-20 04:44:00.880 15381 15432 I WeatherRepository: WEATHER-SNAPSHOT city=东京 source=network temp=24 fetchedAtEpochSec=1787172240
+08-20 04:44:01.274 15381 15432 I WeatherRepository: HTTP-STATUS city=伦敦 code=200
+08-20 04:44:01.275 15381 15432 I WeatherRepository: HTTP-BODY city=伦敦 temp=20.4 code=0 high=25.0 low=16.8 fetchedAtEpochSec=1787172241
+08-20 04:44:01.276 15381 15432 I WeatherRepository: WEATHER-SNAPSHOT city=伦敦 source=network temp=20 fetchedAtEpochSec=1787172241
+08-20 04:44:01.733 15381 15432 I WeatherRepository: HTTP-STATUS city=纽约 code=200
+08-20 04:44:01.735 15381 15432 I WeatherRepository: HTTP-BODY city=纽约 temp=30.8 code=2 high=30.9 low=20.7 fetchedAtEpochSec=1787172241
+08-20 04:44:01.735 15381 15432 I WeatherRepository: WEATHER-SNAPSHOT city=纽约 source=network temp=31 fetchedAtEpochSec=1787172241
+08-20 04:44:01.792 15381 15381 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1125,0.0654,0.0531) distFromCentre=0.1020 azimuth=42.7 spin=2.9
+08-20 04:44:01.792 15381 15381 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0919,0.0595,0.0275) distFromCentre=0.1020 azimuth=19.4 spin=2.9
+08-20 04:44:01.793 15381 15381 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2294,0.0798,0.0225) distFromCentre=0.1020 azimuth=159.2 spin=2.9
+08-20 04:44:01.793 15381 15381 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2164,0.0665,-0.0618) distFromCentre=0.1020 azimuth=-126.9 spin=2.9
+08-20 04:44:03.807 15381 15381 I TimingService: TICK ticks=25 elapsedRealtime=71515382 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:08.828 15381 15381 I TimingService: TICK ticks=50 elapsedRealtime=71520403 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:13.851 15381 15381 I TimingService: TICK ticks=75 elapsedRealtime=71525426 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:18.908 15381 15381 I TimingService: TICK ticks=100 elapsedRealtime=71530483 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:18.916 15381 15381 I NavBar  : tap reached page=WORLD
+08-20 04:44:19.743 15381 15381 I ClockLayout: glassPanel w=795 h=1045 x=665.0 y=40.0
+08-20 04:44:19.743 15381 15381 I WorldLayout: listViewport w=731 h=800 y=141.0
+08-20 04:44:19.744 15381 15381 I WorldLayout: row city=北京 h=120 y=141.0
+08-20 04:44:19.744 15381 15381 I WorldLayout: row city=东京 h=120 y=262.0
+08-20 04:44:19.744 15381 15381 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-20 04:44:19.744 15381 15381 I WorldLayout: row city=纽约 h=120 y=504.0
+08-20 04:44:19.744 15381 15381 I ClockLayout: leftColumn w=568 h=1045 x=40.0 y=40.0
+08-20 04:44:23.974 15381 15381 I TimingService: TICK ticks=125 elapsedRealtime=71535550 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:28.995 15381 15381 I TimingService: TICK ticks=150 elapsedRealtime=71540570 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:34.024 15381 15381 I TimingService: TICK ticks=175 elapsedRealtime=71545600 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

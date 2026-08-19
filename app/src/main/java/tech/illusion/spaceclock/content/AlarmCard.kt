@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import android.util.Log
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -26,6 +25,7 @@ import com.pico.spatial.ui.design.Text
 import com.pico.spatial.ui.foundation.material.backgroundMaterial
 import com.pico.spatial.ui.platform.Material
 import tech.illusion.spaceclock.alarm.Alarm
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 
 /**
@@ -66,21 +66,19 @@ fun AlarmCard(alarm: Alarm, weatherLine: String?, onSnooze: () -> Unit, onDismis
                     // 门禁 B 诊断：截图相机是固定窄视角+带角度的，不能拿截图像素去猜这两个
                     // 按钮的真实坐标，必须打真实布局坐标出来才能精确点击验证遮罩穿透。
                     modifier = Modifier.onGloballyPositioned { c ->
-                        Log.i(
-                            "AlarmLayout",
+                        debugLog("AlarmLayout") {
                             "cardSnooze w=${c.size.width} h=${c.size.height} " +
-                                "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                        )
+                                "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                        }
                     },
                 ) { Text("稍后 10 分钟") }
                 Button(
                     onClick = onDismiss,
                     modifier = Modifier.onGloballyPositioned { c ->
-                        Log.i(
-                            "AlarmLayout",
+                        debugLog("AlarmLayout") {
                             "cardDismiss w=${c.size.width} h=${c.size.height} " +
-                                "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                        )
+                                "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                        }
                     },
                 ) { Text("关闭") }
             }

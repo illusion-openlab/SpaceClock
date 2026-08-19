@@ -12,6 +12,7 @@ import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.ButtonDefaults
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
+import tech.illusion.spaceclock.platform.debugLog
 
 /** 五个功能页，label 是导航按钮上显示的文字（设计文档 §3）。 */
 enum class ClockPage(val label: String) {
@@ -33,11 +34,10 @@ fun NavBar(current: ClockPage, onSelect: (ClockPage) -> Unit, modifier: Modifier
                     onSelect(page)
                 },
                 modifier = Modifier.weight(1f).onGloballyPositioned { c ->
-                    Log.i(
-                        "ClockLayout",
+                    debugLog("ClockLayout") {
                         "navButton page=${page.name} w=${c.size.width} h=${c.size.height} " +
-                            "x=${c.positionInRoot().x} y=${c.positionInRoot().y}",
-                    )
+                            "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                    }
                 },
                 colors = if (page == current) {
                     ButtonDefaults.buttonColors()

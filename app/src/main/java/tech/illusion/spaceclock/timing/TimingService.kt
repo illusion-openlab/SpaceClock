@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.pollAlarms
 import tech.illusion.spaceclock.platform.LaunchActivity
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.store.ClockStore
 import tech.illusion.spaceclock.store.StopwatchSnapshot
 
@@ -352,12 +353,13 @@ class TimingService : Service() {
 
             ticks++
             if (ticks % TICK_LOG_EVERY == 0L) {
-                Log.i(
-                    TAG,
+                // 心跳是周期性仪表（每 5 秒一条，整个运行期不停），走 debugLog 门控：
+                // 门禁 B 装的是 debug APK，"服务真的在后台跑"这条判据的取证能力没变。
+                debugLog(TAG) {
                     "TICK ticks=$ticks elapsedRealtime=$now foreground=$foreground " +
                         "stopwatch=${stopwatch.isRunning} countdown=${countdown.isRunning} " +
-                        "pomodoro=${pomodoro.isRunning} remainingMs=${pomodoro.remainingMs(now)}",
-                )
+                        "pomodoro=${pomodoro.isRunning} remainingMs=${pomodoro.remainingMs(now)}"
+                }
             }
             delay(TICK_MS)
         }

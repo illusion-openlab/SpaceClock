@@ -1,7 +1,6 @@
 package tech.illusion.spaceclock.content.pages
 
 import android.os.SystemClock
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +32,7 @@ import com.pico.spatial.ui.design.SegmentControl
 import com.pico.spatial.ui.design.SegmentItem
 import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 import tech.illusion.spaceclock.timing.TimerState
 import tech.illusion.spaceclock.timing.TimingService
@@ -113,17 +113,17 @@ private fun StopwatchSection(state: TimerState, service: TimingService?) {
     // 服务 5Hz 的采样插值成 0.01 秒精度的显示（服务不必为了两位小数跑 60Hz）。
     // 只在 running 时循环，暂停后协程立即退出，不空转（全局约束禁止 withFrameNanos）。
     LaunchedEffect(running) {
-        Log.i("TimerTick", "stopwatch interpolation loop enter running=$running")
+        debugLog("TimerTick") { "stopwatch interpolation loop enter running=$running" }
         var tickCount = 0
         while (running) {
             tickCount++
             nowMs = SystemClock.elapsedRealtime()
             if (tickCount % 30 == 0) {
-                Log.i("TimerTick", "stopwatch tick count=$tickCount nowMs=$nowMs")
+                debugLog("TimerTick") { "stopwatch tick count=$tickCount nowMs=$nowMs" }
             }
             delay(16L)
         }
-        Log.i("TimerTick", "stopwatch interpolation loop exit tickCount=$tickCount")
+        debugLog("TimerTick") { "stopwatch interpolation loop exit tickCount=$tickCount" }
     }
 
     // 插值：采样值 + 采样之后又过去的那一段。coerceAtLeast(0) 挡住"服务刚发布新采样、本地

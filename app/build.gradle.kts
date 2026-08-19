@@ -37,6 +37,10 @@ android {
     }
     buildFeatures {
         compose = true
+        // AGP 8.x 起 buildConfig 默认关闭，不开这一行就没有 BuildConfig 类。
+        // 需要它是为了用 BuildConfig.DEBUG 门控布局仪表日志（Task 10 Step 1'）：这是个
+        // 常驻挂件，无门控的 onGloballyPositioned 日志会打满整个运行期。
+        buildConfig = true
     }
 }
 

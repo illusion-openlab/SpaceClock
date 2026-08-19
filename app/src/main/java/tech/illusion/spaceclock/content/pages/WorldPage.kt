@@ -1,6 +1,5 @@
 package tech.illusion.spaceclock.content.pages
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +37,7 @@ import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.ScrollIndicator
 import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
@@ -121,10 +121,9 @@ fun WorldPage(
             // 高度/y 位置，事后用算术核对前 6 行是否都落在可视区内。
             Box(
                 Modifier.weight(1f).fillMaxWidth().onGloballyPositioned { c ->
-                    Log.i(
-                        "WorldLayout",
-                        "listViewport w=${c.size.width} h=${c.size.height} y=${c.positionInRoot().y}",
-                    )
+                    debugLog("WorldLayout") {
+                        "listViewport w=${c.size.width} h=${c.size.height} y=${c.positionInRoot().y}"
+                    }
                 },
             ) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -139,10 +138,9 @@ fun WorldPage(
                             onSelect = { onSelectCity(city) },
                             onSetHome = { onSetHome(city) },
                             rowModifier = Modifier.onGloballyPositioned { c ->
-                                Log.i(
-                                    "WorldLayout",
-                                    "row city=${city.name} h=${c.size.height} y=${c.positionInRoot().y}",
-                                )
+                                debugLog("WorldLayout") {
+                                    "row city=${city.name} h=${c.size.height} y=${c.positionInRoot().y}"
+                                }
                             },
                         )
                         HorizontalDivider(color = scheme.dividerLine)
@@ -155,7 +153,15 @@ fun WorldPage(
         Spacer(Modifier.height(8.dp))
         Button(
             onClick = { showPicker = true },
-            modifier = Modifier.fillMaxWidth(),
+            // 这是 Task 10 Step 2'' 的第二个受害者（另一个是 AlarmPage 的「＋新建闹钟」）：
+            // 修复前整条 96px NavBar 压在它上面。坐标打点让"垂直重叠 ≤ 0"能被算术核对，
+            // 而不是靠那台固定窄视角的截图相机去看。
+            modifier = Modifier.fillMaxWidth().onGloballyPositioned { c ->
+                debugLog("WorldLayout") {
+                    "addCity w=${c.size.width} h=${c.size.height} " +
+                        "x=${c.positionInRoot().x} y=${c.positionInRoot().y}"
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = scheme.fillTertiary),
         ) {
             Text("＋ 添加城市", color = scheme.labelPrimary)

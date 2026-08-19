@@ -1,0 +1,99 @@
+--------- beginning of main
+08-20 04:44:40.606   827  1896 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 04:44:40.606   827  1896 E ActivityManager: java.lang.Throwable
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 04:44:40.606   827  1896 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 04:44:40.609   827  5776 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 18444:com.bytedance.pico.matrix/u0a56 PRSmt{a0f8800 p:0 rp:18444 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 04:44:40.609   827  5776 E ActivityManager: java.lang.Throwable
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 04:44:40.609   827  5776 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-20 04:44:40.616   827   827 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-20 04:44:40.617   827   848 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-20 04:44:40.709   827  1095 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-20 04:44:40.961   827  5776 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 04:44:41.758   827  1892 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 04:44:41.802 15644 15644 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 04:44:41.803 15644 15644 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 04:44:41.814 15644 15644 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-20 04:44:41.814 15644 15706 I WeatherRepository: WEATHER-SNAPSHOT city=北京 source=cache-fresh temp=24 fetchedAtEpochSec=1787172240
+08-20 04:44:41.819 15644 15644 I TimingService: startForeground OK text=闹钟守候中
+08-20 04:44:41.819 15644 15644 I TimingService: created alarms=3 enabled=3 seededCompletedToday=0 seededFocusedTodayMs=0 config=PomodoroConfig(workMin=15, shortMin=1, longMin=1, roundsPerLong=4) RESURFACE countdownFinished=false pendingAlarmIds=[] (of []) seededStopwatchElapsedMs=0 seededLaps=0
+08-20 04:44:41.823 15644 15644 I ClockVolume: timing service connected
+08-20 04:44:42.016 15644 15706 I WeatherRepository: WEATHER-SNAPSHOT city=东京 source=cache-fresh temp=24 fetchedAtEpochSec=1787172240
+08-20 04:44:42.216 15644 15706 I WeatherRepository: WEATHER-SNAPSHOT city=伦敦 source=cache-fresh temp=20 fetchedAtEpochSec=1787172241
+08-20 04:44:42.417 15644 15706 I WeatherRepository: WEATHER-SNAPSHOT city=纽约 source=cache-fresh temp=31 fetchedAtEpochSec=1787172241
+08-20 04:44:42.684 15644 15644 I EarthScene: EARTH-READOUT size=(0.2807,0.2807,0.2807) localCenter=(-0.0000,0.1416,-0.0000) scale=0.71261 radius=0.1000
+08-20 04:44:43.670 15644 15644 I EarthScene: PIN-READOUT 北京 lat=39.90 lon=116.40 pos=(-0.1124,0.0654,0.0530) distFromCentre=0.1020 azimuth=42.6 spin=3.0
+08-20 04:44:43.670 15644 15644 I EarthScene: PIN-READOUT 东京 lat=35.68 lon=139.69 pos=(-0.0918,0.0595,0.0275) distFromCentre=0.1020 azimuth=19.4 spin=3.0
+08-20 04:44:43.670 15644 15644 I EarthScene: PIN-READOUT 伦敦 lat=51.51 lon=-0.13 pos=(-0.2293,0.0798,0.0226) distFromCentre=0.1020 azimuth=159.2 spin=3.0
+08-20 04:44:43.670 15644 15644 I EarthScene: PIN-READOUT 纽约 lat=40.71 lon=-74.01 pos=(-0.2165,0.0665,-0.0618) distFromCentre=0.1020 azimuth=-126.9 spin=3.0
+08-20 04:44:46.640 15644 15644 I TimingService: TICK ticks=25 elapsedRealtime=71558215 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:51.686 15644 15644 I TimingService: TICK ticks=50 elapsedRealtime=71563261 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:44:56.708 15644 15644 I TimingService: TICK ticks=75 elapsedRealtime=71568283 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:01.739 15644 15644 I TimingService: TICK ticks=100 elapsedRealtime=71573314 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:02.041 15644 15644 I NavBar  : tap reached page=WORLD
+08-20 04:45:02.742 15644 15644 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 04:45:02.742 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: listViewport w=731 h=664 y=141.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: row city=北京 h=120 y=141.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: row city=东京 h=120 y=262.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: row city=纽约 h=120 y=504.0
+08-20 04:45:02.743 15644 15644 I WorldLayout: addCity w=731 h=96 x=697.0 y=821.0
+08-20 04:45:06.772 15644 15644 I TimingService: TICK ticks=125 elapsedRealtime=71578347 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:11.803 15644 15644 I TimingService: TICK ticks=150 elapsedRealtime=71583378 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:16.827 15644 15644 I TimingService: TICK ticks=175 elapsedRealtime=71588402 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:20.535 15644 15644 I NavBar  : tap reached page=ALARM
+08-20 04:45:20.725 15644 15644 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 04:45:20.725 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:45:20.725 15644 15644 I AlarmLayout: newAlarm w=731 h=96 x=697.0 y=821.0
+08-20 04:45:21.937 15644 15644 I TimingService: TICK ticks=200 elapsedRealtime=71593513 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:26.957 15644 15644 I TimingService: TICK ticks=225 elapsedRealtime=71598533 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:31.979 15644 15644 I TimingService: TICK ticks=250 elapsedRealtime=71603555 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:37.004 15644 15644 I TimingService: TICK ticks=275 elapsedRealtime=71608580 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:38.968 15644 15644 I NavBar  : tap reached page=TIMER
+08-20 04:45:39.702 15644 15644 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 04:45:39.702 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:45:39.709 15644 15644 I TimerTick: stopwatch interpolation loop enter running=false
+08-20 04:45:39.709 15644 15644 I TimerTick: stopwatch interpolation loop exit tickCount=0
+08-20 04:45:42.021 15644 15644 I TimingService: TICK ticks=300 elapsedRealtime=71613597 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:47.050 15644 15644 I TimingService: TICK ticks=325 elapsedRealtime=71618625 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:52.101 15644 15644 I TimingService: TICK ticks=350 elapsedRealtime=71623676 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:57.123 15644 15644 I TimingService: TICK ticks=375 elapsedRealtime=71628699 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:45:57.165 15644 15644 I NavBar  : tap reached page=FOCUS
+08-20 04:45:57.694 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:46:02.136 15644 15644 I TimingService: TICK ticks=400 elapsedRealtime=71633712 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:46:07.164 15644 15644 I TimingService: TICK ticks=425 elapsedRealtime=71638740 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:46:12.188 15644 15644 I TimingService: TICK ticks=450 elapsedRealtime=71643763 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000
+08-20 04:46:15.401 15644 15644 I NavBar  : tap reached page=WORLD
+08-20 04:46:15.723 15644 15644 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 04:46:15.723 15644 15644 I ClockLayout: glassPanel w=795 h=909 x=665.0 y=40.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: listViewport w=731 h=664 y=141.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: row city=北京 h=120 y=141.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: row city=东京 h=120 y=262.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: row city=伦敦 h=120 y=383.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: row city=纽约 h=120 y=504.0
+08-20 04:46:15.723 15644 15644 I WorldLayout: addCity w=731 h=96 x=697.0 y=821.0
+08-20 04:46:17.213 15644 15644 I TimingService: TICK ticks=475 elapsedRealtime=71648789 foreground=true stopwatch=false countdown=false pomodoro=false remainingMs=900000

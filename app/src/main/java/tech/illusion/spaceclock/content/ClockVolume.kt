@@ -1,10 +1,20 @@
 package tech.illusion.spaceclock.content
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -15,19 +25,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import android.util.Log
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.foundation.material.backgroundMaterial
 import com.pico.spatial.ui.platform.Material
 import kotlinx.coroutines.delay
@@ -40,6 +44,7 @@ import tech.illusion.spaceclock.content.pages.HomePage
 import tech.illusion.spaceclock.content.pages.TimerPage
 import tech.illusion.spaceclock.content.pages.WorldPage
 import tech.illusion.spaceclock.content.pages.formatMinSec
+import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.platform.rememberNotificationPermission
 import tech.illusion.spaceclock.store.ClockStore
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
@@ -173,76 +178,103 @@ fun ClockVolume() {
         }
     }
 
-    // 门禁 B 的裁切类判定项（按钮条不被裁、左右不重叠）不靠模拟器截图——那台相机固定窄视角，
-    // 一帧最多装下 2/5 个按钮，看不到全貌。改用真实测得的坐标：记录根容器与三个子层的宽度/
-    // 位置，事后用数字核对右边缘是否越过容器宽度。留在代码里成本很低，Task 3/9 等后续任务
-    // 改这块布局时也用得上，所以不做完就摘掉。
+    // 门禁 B 的裁切类判定项（按钮条不被裁、左右不重叠、**内容面板与按钮条不垂直重叠**）不靠
+    // 模拟器截图——那台相机固定窄视角，一帧最多装下 2/5 个按钮，看不到全貌。改用真实测得的
+    // 坐标：记录根容器与各子层的宽度/位置，事后用数字核对边缘关系。留在代码里成本很低
+    // （debug-only，见 layoutLog），Task 3/9 等后续任务改这块布局时也用得上。
+    //
+    // 根容器要自己铺底色：设计文档 §5.4.1 把 `#080E17`（= fillSecondary）定义为「体积窗口
+    // 底色」，而 manifest 里 `windowcontainer.materialbackground=0` 刻意关掉了系统那整块
+    // 玻璃底（"会糊掉体积感"）。两件事加起来 = 除了应用自己画，没有别的东西会画这个底色。
+    // 不铺的话，右侧面板那层 `Material.Thin` 薄玻璃透出来的就不是深空蓝，而是玻璃背后的
+    // 3D 视图/透视画面（Task 10 issue ②）。
     Box(
-        Modifier.fillMaxSize().onGloballyPositioned { c ->
-            Log.i("ClockLayout", "root w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
-        }
+        Modifier.fillMaxSize()
+            .background(PicoTheme.colorScheme.fillSecondary)
+            .onGloballyPositioned { c ->
+                debugLog("ClockLayout") { "root w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
+            }
     ) {
         EarthView(cities = selectedCities, focusCity = focusedCity, modifier = Modifier.fillMaxSize())
-        Row(Modifier.fillMaxSize().padding(20.dp)) {
-            LeftColumn(
-                now,
-                statusLineFor(page, today, alarms, timerState, pomodoroState, homeCityName, weatherByCity[homeCityName]),
-                Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
-                    Log.i("ClockLayout", "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
-                },
-            )
-            Spacer(Modifier.weight(0.04f))
-            Box(
-                Modifier.weight(0.56f).fillMaxHeight()
-                    .backgroundMaterial(enable = true, style = Material.Thin)
-                    .clip(RoundedCornerShape(16.dp))
-                    .onGloballyPositioned { c ->
-                        Log.i("ClockLayout", "glassPanel w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
+        // 内容区与按钮条上下分区（Task 10 Step 2''）。原先 NavBar 用 `align(BottomCenter)`
+        // 浮在 `Row` 之上，而两栏都 `fillMaxHeight()` 一直延伸到窗口底边——实测（AGENTS.md
+        // 有坐标）面板底边 y=1085、按钮条顶边 y=989，**整条 96px 按钮条压在面板上面**，
+        // 贴底的全宽按钮（AlarmPage 的「＋新建闹钟」/「保存」、WorldPage 的「＋添加城市」）
+        // 有一部分点不到。
+        //
+        // 修法用 Column 分区而不是给面板加一个写死的 bottom padding：按钮条的高度由
+        // SpatialUI Button 的固有尺寸决定（实测 96px = 48dp），写死就会在组件改版时静默失效。
+        // 这也回到了设计稿的原样：`layout-v2.html` C 方案里面板是 `top:9%; bottom:19%`、
+        // 按钮条 `bottom:5%; height:9%`，面板本来就不贴窗口底边，两者之间留 5%（≈ 外边距同宽）
+        // 的间隙。所以间隙直接复用外边距的 20.dp，不新造常量。
+        Column(Modifier.fillMaxSize().padding(20.dp)) {
+            Row(Modifier.fillMaxWidth().weight(1f)) {
+                LeftColumn(
+                    now,
+                    statusLineFor(page, today, alarms, timerState, pomodoroState, homeCityName, weatherByCity[homeCityName]),
+                    Modifier.weight(0.40f).fillMaxHeight().onGloballyPositioned { c ->
+                        debugLog("ClockLayout") { "leftColumn w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
+                    },
+                )
+                Spacer(Modifier.weight(0.04f))
+                Box(
+                    // modifier 顺序保持原样（`backgroundMaterial` 在前、`clip` 在后）。
+                    // Task 10 上机 A/B 对照过"把 clip 挪到前面"这个假设：同一相机位姿下修复前后
+                    // 面板四角的圆角**半径与弧线完全一致**（证据
+                    // `task10-a1-control-home.png` / `task10-b1-fixed-home.png` 的角部裁剪），
+                    // 说明这一层玻璃本来就吃到了 16dp 圆角，顺序假设被证伪 —— 所以不改它。
+                    Modifier.weight(0.56f).fillMaxHeight()
+                        .backgroundMaterial(enable = true, style = Material.Thin)
+                        .clip(RoundedCornerShape(16.dp))
+                        .onGloballyPositioned { c ->
+                            debugLog("ClockLayout") { "glassPanel w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
+                        }
+                ) {
+                    when (page) {
+                        ClockPage.HOME -> HomePage(
+                            weather = weatherByCity[homeCityName],
+                            cityName = homeCityName,
+                        )
+                        ClockPage.WORLD -> WorldPage(
+                            cities = selectedCities,
+                            homeCityName = homeCityName,
+                            focusedCityName = focusedCity?.name,
+                            weatherByCity = weatherByCity,
+                            onAddCity = { city ->
+                                val updated = selectedCityNames + city.name
+                                store.selectedCityNames = updated
+                                selectedCityNames = updated
+                            },
+                            onSetHome = { city ->
+                                store.homeCityName = city.name
+                                homeCityName = city.name
+                            },
+                            onSelectCity = { focusedCity = it },
+                        )
+                        ClockPage.ALARM -> AlarmPage(
+                            alarms = alarms,
+                            onAlarmsChanged = { updated ->
+                                store.alarms = updated
+                                alarms = updated
+                            },
+                        )
+                        ClockPage.TIMER -> TimerPage(state = timerState, service = service)
+                        ClockPage.FOCUS -> FocusPage(state = pomodoroState, service = service)
                     }
-            ) {
-                when (page) {
-                    ClockPage.HOME -> HomePage(
-                        weather = weatherByCity[homeCityName],
-                        cityName = homeCityName,
-                    )
-                    ClockPage.WORLD -> WorldPage(
-                        cities = selectedCities,
-                        homeCityName = homeCityName,
-                        focusedCityName = focusedCity?.name,
-                        weatherByCity = weatherByCity,
-                        onAddCity = { city ->
-                            val updated = selectedCityNames + city.name
-                            store.selectedCityNames = updated
-                            selectedCityNames = updated
-                        },
-                        onSetHome = { city ->
-                            store.homeCityName = city.name
-                            homeCityName = city.name
-                        },
-                        onSelectCity = { focusedCity = it },
-                    )
-                    ClockPage.ALARM -> AlarmPage(
-                        alarms = alarms,
-                        onAlarmsChanged = { updated ->
-                            store.alarms = updated
-                            alarms = updated
-                        },
-                    )
-                    ClockPage.TIMER -> TimerPage(state = timerState, service = service)
-                    ClockPage.FOCUS -> FocusPage(state = pomodoroState, service = service)
                 }
             }
+            Spacer(Modifier.height(20.dp))
+            NavBar(
+                page,
+                { page = it },
+                Modifier.fillMaxWidth().onGloballyPositioned { c ->
+                    debugLog("ClockLayout") { "navBar w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
+                },
+            )
         }
-        NavBar(
-            page,
-            { page = it },
-            Modifier.align(Alignment.BottomCenter).padding(20.dp).onGloballyPositioned { c ->
-                Log.i("ClockLayout", "navBar w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}")
-            },
-        )
 
-        // 提醒卡片盖在最上层——必须在 NavBar 之后添加才能真正盖住它（Compose 里同一个 Box
-        // 的子节点后添加的画在上面）。遮罩自己吞掉指针事件（AlarmCard 内部实现），这里
+        // 提醒卡片盖在最上层——必须在装内容与按钮条的那个 Column **之后**添加才能真正盖住
+        // 它们（Compose 里同一个 Box 的子节点后添加的画在上面）。遮罩自己吞掉指针事件（AlarmCard 内部实现），这里
         // 只负责把用户的选择转发给服务：稍后=记 10 分钟后的 snooze 时刻并让下一个排队的闹钟
         // 顶上来；关闭=直接让下一个顶上来。队列本身在服务里，UI 不在时也照样排。
         firingAlarm?.let { alarm ->
