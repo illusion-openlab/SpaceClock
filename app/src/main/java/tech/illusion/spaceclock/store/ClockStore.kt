@@ -5,6 +5,7 @@ import java.time.LocalDate
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.parseAlarms
 import tech.illusion.spaceclock.alarm.serializeAlarms
+import tech.illusion.spaceclock.time.City
 import tech.illusion.spaceclock.timing.PomodoroConfig
 
 /**
@@ -41,6 +42,17 @@ class ClockStore(context: Context) {
             ?: listOf("北京", "东京", "伦敦", "纽约")     // 首次启动的默认四城
         set(value) =
             prefs.edit().putString(KEY_CITIES, value.joinToString(sep.toString())).apply()
+
+    /**
+     * IP 定位合成的"当前位置"城市；null 表示从未成功定位过。跟 [selectedCityNames]/[homeCityName]
+     * 一样是纯值持久化，不是"是否已经问过定位权限"那类一次性标记——这里存的是最近一次成功定位的结果，
+     * 每次"使用当前位置"/"重新定位"成功都会覆盖它。
+     */
+    var currentLocationCity: City?
+        get() = parseCurrentLocationCity(prefs.getString(KEY_CURRENT_LOCATION_CITY, null))
+        set(value) = prefs.edit()
+            .putString(KEY_CURRENT_LOCATION_CITY, serializeCurrentLocationCity(value))
+            .apply()
 
     var pomodoroConfig: PomodoroConfig
         get() = PomodoroConfig(
@@ -139,5 +151,32 @@ class ClockStore(context: Context) {
         const val KEY_PENDING_ALARMS = "pending_alarm_alerts"
         const val KEY_SW_ELAPSED = "sw_elapsed"
         const val KEY_SW_LAPS = "sw_laps"
+        const val KEY_CURRENT_LOCATION_CITY = "current_location_city"
     }
+}
+
+/** 跟 [ClockStore] 实例里的 `sep`（`''`）同一个字符，只是这里要保持纯函数、不碰 Context。 */
+private const val CURRENT_LOCATION_FIELD_SEP = ''
+
+/** [City] -> 持久化字符串；`null` 输入原样返回 `null`（表示"清空/从未定位过"）。 */
+internal fun serializeCurrentLocationCity(city: City?): String? {
+    if (city == null) return null
+    return listOf(city.name, city.zoneId, city.lat, city.lon, city.displayName ?: "")
+        .joinToString(CURRENT_LOCATION_FIELD_SEP.toString())
+}
+
+/** 持久化字符串 -> [City]；字段数不对、数值字段解析失败都返回 `null`，不抛异常。 */
+internal fun parseCurrentLocationCity(raw: String?): City? {
+    if (raw == null) return null
+    val parts = raw.split(CURRENT_LOCATION_FIELD_SEP.toString())
+    if (parts.size != 5) return null
+    return runCatching {
+        City(
+            name = parts[0],
+            zoneId = parts[1],
+            lat = parts[2].toFloat(),
+            lon = parts[3].toFloat(),
+            displayName = parts[4].ifEmpty { null },
+        )
+    }.getOrNull()
 }
