@@ -1,0 +1,84 @@
+--------- beginning of main
+08-20 10:04:35.040   832  1196 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 1915:com.bytedance.pico.matrix/u0a56 PRSmt{15f9f29 p:0 rp:1915 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 10:04:35.040   832  1196 E ActivityManager: java.lang.Throwable
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 10:04:35.040   832  1196 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+--------- beginning of system
+08-20 10:04:35.058   832   856 W ActivityManager: setHasOverlayUi called on unknown pid: 8286
+08-20 10:04:35.065   832   832 W ActivityManager: onBringUpServiceLocked, com.android.keychain
+08-20 10:04:35.081   832   855 W ActivityManager: onBringUpServiceLocked, android.ext.services
+08-20 10:04:35.086   832  4431 E ActivityManager: Sending non-protected broadcast com.bytedance.pico.matrix.parentalcontrol.action.BAN_LIST_CHANGED from system 1915:com.bytedance.pico.matrix/u0a56 PRSmt{15f9f29 p:0 rp:1915 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.bytedance.pico.matrix
+08-20 10:04:35.086   832  4431 E ActivityManager: java.lang.Throwable
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 10:04:35.086   832  4431 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 10:04:35.179   832  1099 W ActivityManager: onBringUpServiceLocked, com.android.permissioncontroller
+08-20 10:04:35.478   832   847 W ActivityManager: attachApplicationLocked appInfo (false) AppSpatialConfig{mPackageName='tech.illusion.spaceclock', mLaunchStyle='null', mEnable2dSpatial=true, mEnable2DMipmap=false, mHasAppLevelConfig=false, mEnableTapCompat=false, mSkipImeFrameFix=false, mTapCompatWindows=[], mConfigOrientation=1, mWidth=1080, mHeight=1920, mDensity=400, mTouchSlop=-1, mEnable2dSpatial=true, mDimBackground=false}
+08-20 10:04:35.941   832  3251 W ActivityManager: onBringUpServiceLocked, tech.illusion.spaceclock
+08-20 10:04:35.994  9492  9492 I ClockLayout: root w=1500 h=1125 x=0.0 y=0.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: contentPanel w=795 h=909 x=665.0 y=40.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navBar w=1420 h=96 x=40.0 y=989.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navButton page=HOME w=272 h=96 x=40.0 y=989.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navButton page=WORLD w=271 h=96 x=328.0 y=989.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navButton page=ALARM w=271 h=96 x=615.0 y=989.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navButton page=TIMER w=271 h=96 x=902.0 y=989.0
+08-20 10:04:35.995  9492  9492 I ClockLayout: navButton page=FOCUS w=271 h=96 x=1189.0 y=989.0
+08-20 10:04:36.018  9492  9492 I ClockVolume: POST_NOTIFICATIONS granted=true (拒绝也不影响计时与闹钟)
+08-20 10:04:36.081  9492  9492 I ClockVolume: timing service connected
+08-20 10:04:48.786   832  3251 E ActivityManager: Sending non-protected broadcast com.pico.spatial.runtime.action.empty.tap from system 1255:com.pico.spatial.runtime/1000 PRSmt{df8a06 p:0 rp:1255 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.pico.spatial.runtime
+08-20 10:04:48.786   832  3251 E ActivityManager: java.lang.Throwable
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 10:04:48.786   832  3251 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 10:04:50.227   832  3251 E ActivityManager: Sending non-protected broadcast worldspace.intent.action.RECENTER_COMPLETE from system 1735:com.picoxr.worldspace/1000 PRSmt{60671b7 p:0 rp:1735 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.picoxr.worldspace
+08-20 10:04:50.227   832  3251 E ActivityManager: java.lang.Throwable
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 10:04:50.227   832  3251 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)
+08-20 10:04:50.499  9492  9492 I NavBar  : tap reached page=ALARM
+08-20 10:04:50.596  9492  9492 I ClockLayout: leftColumn w=568 h=909 x=40.0 y=40.0
+08-20 10:04:50.596  9492  9492 I ClockLayout: contentPanel w=795 h=909 x=665.0 y=40.0
+08-20 10:04:50.596  9492  9492 I AlarmLayout: newAlarm w=731 h=96 x=697.0 y=821.0
+08-20 10:05:04.821  9492  9492 I ClockLayout: contentPanel w=795 h=909 x=665.0 y=40.0
+08-20 10:05:04.821  9492  9492 I AlarmLayout: hour- w=162 h=96 x=697.0 y=188.0
+08-20 10:05:04.821  9492  9492 I AlarmLayout: hour+ w=162 h=96 x=979.0 y=188.0
+08-20 10:05:04.821  9492  9492 I AlarmLayout: minute- w=162 h=96 x=697.0 y=339.0
+08-20 10:05:04.821  9492  9492 I AlarmLayout: minute+ w=162 h=96 x=979.0 y=339.0
+08-20 10:05:04.821  9492  9492 I AlarmLayout: save w=162 h=96 x=697.0 y=821.0
+08-20 10:05:07.933   832  4431 E ActivityManager: Sending non-protected broadcast com.pico.spatial.runtime.action.empty.tap from system 1255:com.pico.spatial.runtime/1000 PRSmt{df8a06 p:0 rp:1255 t:null sa:-800 usps:0 sps:0 kt:0 fs:0 inSfile:false freezeBlockFlags:0 pendingInstallProviderCount:0 fm:INVALID} pkg com.pico.spatial.runtime
+08-20 10:05:07.933   832  4431 E ActivityManager: java.lang.Throwable
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.checkBroadcastFromSystem(BroadcastController.java:2262)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLockedTraced(BroadcastController.java:1742)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentLocked(BroadcastController.java:870)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.BroadcastController.broadcastIntentWithFeature(BroadcastController.java:803)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:15844)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2968)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3048)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1430)
+08-20 10:05:07.933   832  4431 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1374)

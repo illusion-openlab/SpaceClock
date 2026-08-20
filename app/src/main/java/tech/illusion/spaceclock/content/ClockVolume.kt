@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,8 +33,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.design.PicoTheme
-import com.pico.spatial.ui.foundation.material.backgroundMaterial
-import com.pico.spatial.ui.platform.Material
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import tech.illusion.spaceclock.alarm.Alarm
@@ -188,10 +187,11 @@ fun ClockVolume() {
     // 根容器要自己铺底色：设计文档 §5.4.1 把 `#080E17`（= fillSecondary）定义为「体积窗口
     // 底色」，而 manifest 里 `windowcontainer.materialbackground=0` 刻意关掉了系统那整块
     // 玻璃底（"会糊掉体积感"）。两件事加起来 = 除了应用自己画，没有别的东西会画这个底色。
-    // 不铺的话，右侧面板那层 `Material.Thin` 薄玻璃透出来的就不是深空蓝，而是玻璃背后的
-    // 3D 视图/透视画面（Task 10 issue ②）。
+    // 不铺的话，左栏背后、两栏中缝、按钮条周围露出来的就不是深空蓝，而是透视画面。
+    // （右侧面板不再依赖这一层：issue ② 之后它自己铺了不透明底，见下面 contentPanel。）
     Box(
         Modifier.fillMaxSize()
+            .clip(RoundedCornerShape(24.dp))
             .background(PicoTheme.colorScheme.fillSecondary)
             .onGloballyPositioned { c ->
                 debugLog("ClockLayout") { "root w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
@@ -220,16 +220,41 @@ fun ClockVolume() {
                 )
                 Spacer(Modifier.weight(0.04f))
                 Box(
-                    // modifier 顺序保持原样（`backgroundMaterial` 在前、`clip` 在后）。
-                    // Task 10 上机 A/B 对照过"把 clip 挪到前面"这个假设：同一相机位姿下修复前后
-                    // 面板四角的圆角**半径与弧线完全一致**（证据
-                    // `task10-a1-control-home.png` / `task10-b1-fixed-home.png` 的角部裁剪），
-                    // 说明这一层玻璃本来就吃到了 16dp 圆角，顺序假设被证伪 —— 所以不改它。
+                    // **面板是不透明的，不是毛玻璃**（issue ② 的最终裁决，用户 2026-08-20 定）。
+                    //
+                    // 为什么撤掉 `backgroundMaterial(Material.Thin)`：那是合成器层的材质，采的是
+                    // 环境/透视画面而**不是**应用画在它背后的任何东西（Task 10 上机证伪过"在玻璃
+                    // 底下垫色"：铺底色前后面板采样值一个字节都没变，单变量控制项是窗外那面墙）。
+                    // 后果是亮房间里面板读成 `#A6A6A3`，`labelSecondary` 对比度只有 **1.01:1**
+                    // ——不是"偏亮一点"，是次要文字实际不可读。四档材质（Thin/Regular/Thick/
+                    // Thickest）本可以试，但用户直接选了确定性更高的不透明方案。
+                    //
+                    // 代价如实记：这偏离设计 §5.4「用 `backgroundMaterial` 做玻璃质感，而不是自己
+                    // 叠半透明色块」，是 AGENTS.md 记账里的第 5 条设计偏差。换来的是对比度在任何
+                    // 环境下都锁定在设计意图值（`labelSecondary` 7.12:1 / `labelPrimary` 15.48:1）。
+                    //
+                    // 三层的分工，缺一不可：
+                    //   `clip` 在最前  —— SDK 主题文档明写"有背景形状要配合 clip"，且禁止用
+                    //                      `background(color, shape)` 那种写法定形状。
+                    //   `fillSecondary` —— 负责**不透明**。`fillLight` 只有 9% alpha，单铺会把
+                    //                      背后的 EarthView / 透视画面透出来，等于没修。
+                    //   `fillLight`     —— 设计 §5.4.1 指派给「右侧玻璃面板、按钮底」的 token，
+                    //                      在此之前全项目从未用过（原记账 13）。两层合成
+                    //                      = rgb(15,26,41) = `#0F1A29`，对上 AGENTS.md 记的
+                    //                      设计意图值「约 #121A28」。
+                    //   `border`        —— 原记账「面板缺描边」；值取 spec token `dividerLine`
+                    //                      `0x3378AAE6`，不是 HTML mock 的 rgba(255,255,255,.11)。
+                    //
+                    // 保留一条已被证伪的假设备查，别再重试：clip 与背景的**顺序**从来不是圆角丢失
+                    // 的原因。Task 10 的载重证据是 `task10-a1-control-home.png` 单图——原始顺序下
+                    // 面板四角已经是 16dp 圆角。
                     Modifier.weight(0.56f).fillMaxHeight()
-                        .backgroundMaterial(enable = true, style = Material.Thin)
                         .clip(RoundedCornerShape(16.dp))
+                        .background(PicoTheme.colorScheme.fillSecondary)
+                        .background(PicoTheme.colorScheme.fillLight)
+                        .border(1.dp, PicoTheme.colorScheme.dividerLine, RoundedCornerShape(16.dp))
                         .onGloballyPositioned { c ->
-                            debugLog("ClockLayout") { "glassPanel w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
+                            debugLog("ClockLayout") { "contentPanel w=${c.size.width} h=${c.size.height} x=${c.positionInRoot().x} y=${c.positionInRoot().y}" }
                         }
                 ) {
                     when (page) {
@@ -279,12 +304,13 @@ fun ClockVolume() {
         // （命中测试走 Compose 的兄弟节点顺序，最后一个兄弟最先接事件），遮罩再自己吞掉事件
         // （AlarmCard 内部实现）——穿透点亮下层按钮的坑由这条挡住。
         //
-        // **但"后添加就画在上面"对玻璃面板不成立**：`backgroundMaterial` 是合成器层，不参与
-        // Compose 的绘制顺序。既有证据 `task7-3-alarm-card-fired.png`：左栏被遮罩压暗
-        // （亮度≈75），而右侧玻璃面板连同它整页内容（新建闹钟编辑器、保存/取消）**一点没被压暗**
-        // （亮度≈169，与无遮罩轮次量到的面板亮度一致）。所以遮罩在**视觉上只盖住左半边**。
-        // 输入安全、视觉盖不住，是两件事，别把这里的顺序当成"视觉一定盖得住"的依据。
-        // 这不是本任务引入的回归（修复前后同样成立），已记入 AGENTS.md 记账。这里
+        // 历史坑（issue ② 之后**预期已消失，但本轮未验证**）：面板还是 `backgroundMaterial`
+        // 玻璃时，"后添加就画在上面"对它不成立——那是合成器层，不参与 Compose 绘制顺序。
+        // 证据 `task7-3-alarm-card-fired.png`：左栏被遮罩压暗（亮度≈75），右侧玻璃面板连同
+        // 整页内容（新建闹钟编辑器、保存/取消）**一点没被压暗**（亮度≈169）。
+        // issue ② 把面板改成普通 Compose 绘制的不透明底之后，遮罩**应该**盖得住它了，但这需要
+        // 闹钟到点态才能拍到，改动那一轮没制造该状态 → 标「预期解决、未验证」，别当已修。
+        // 无论视觉如何，**输入**一直是安全的（命中测试走兄弟节点顺序）。这里
         // 只负责把用户的选择转发给服务：稍后=记 10 分钟后的 snooze 时刻并让下一个排队的闹钟
         // 顶上来；关闭=直接让下一个顶上来。队列本身在服务里，UI 不在时也照样排。
         firingAlarm?.let { alarm ->

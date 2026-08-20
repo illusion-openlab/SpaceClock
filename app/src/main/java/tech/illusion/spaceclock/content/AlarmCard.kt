@@ -34,10 +34,12 @@ import tech.illusion.spaceclock.theme.TABULAR_FIGURES
  * 下层导航按钮——工作区已经在别的任务上踩过这个坑。
  *
  * **遮罩的实际覆盖范围要说准**：它在**输入**上覆盖整个体积窗口（含 NavBar）——命中测试走
- * Compose 兄弟节点顺序，本组件是最后一个兄弟。但在**视觉**上它盖不住右侧那块
- * `backgroundMaterial` 玻璃面板：那是合成器层，不参与 Compose 绘制顺序。既有证据
- * `task7-3-alarm-card-fired.png` 里左栏被压暗、右侧面板与它整页内容亮着穿在遮罩之上。
- * 不要把这里写成"覆盖整个体积窗口"就完事——那句话只对输入成立。
+ * Compose 兄弟节点顺序，本组件是最后一个兄弟。**视觉**覆盖则要分历史阶段看：
+ * 右侧面板曾是 `backgroundMaterial` 玻璃（合成器层，不参与 Compose 绘制顺序），那时遮罩
+ * 视觉上只盖住左半边——证据 `task7-3-alarm-card-fired.png` 里左栏被压暗（≈75）、右侧面板
+ * 连同整页内容亮着（≈169）穿在遮罩之上。issue ② 之后面板改成普通 Compose 绘制的不透明底，
+ * 遮罩**预期**能盖住它，但**尚未在闹钟到点态下拍图验证** → 别写成"现在盖得住了"。
+ * 注意本卡片自身仍用 `backgroundMaterial`（合成器层），它浮在遮罩之上是预期行为。
  */
 @Composable
 fun AlarmCard(alarm: Alarm, weatherLine: String?, onSnooze: () -> Unit, onDismiss: () -> Unit) {

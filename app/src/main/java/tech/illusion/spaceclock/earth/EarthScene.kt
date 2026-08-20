@@ -5,6 +5,7 @@ import androidx.annotation.MainThread
 import com.pico.spatial.core.container.SpatialViewContent
 import com.pico.spatial.core.ecs.Entity
 import com.pico.spatial.core.ecs.ModelComponent
+import com.pico.spatial.core.ecs.OpacityControllerComponent
 import com.pico.spatial.core.ecs.TransformComponent
 import com.pico.spatial.core.ecs.resource.BlendingMode
 import com.pico.spatial.core.ecs.resource.MeshResource
@@ -35,7 +36,7 @@ private const val TARGET_DIAMETER_M = 0.20f
 private const val LEFT_OFFSET_M = -0.17f
 
 /** 标记点直径约 1.6cm（0.20m 的球上刚好可见又不糊成一片）——指 **root 空间**的成品尺寸。 */
-private const val PIN_RADIUS_M = 0.008f
+private const val PIN_RADIUS_M = 0.004f
 
 /**
  * 标记点抬离球面的比例。20 段低模的面心比理想球面凹 R(1−cos9°) ≈ 半径的 1.2%，
@@ -228,6 +229,8 @@ class EarthScene {
                     UnlitMaterial.create(BlendingMode.OPAQUE).apply { setBaseColor(pinColor) },
                 ),
             )
+            pin.components.set(OpacityControllerComponent(opacity = 0.6f))
+
             // 单位方向向量（模型坐标系）→ 引擎坐标系 → 乘局部半径 → **加上局部球心偏移**。
             //
             // 那个偏移是必须的：标记点挂在 earth 下，坐标系是 earth 的**局部**空间，而
