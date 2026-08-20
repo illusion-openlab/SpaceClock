@@ -77,6 +77,7 @@ fun WorldPage(
     onSetHome: (City) -> Unit,
     onSelectCity: (City) -> Unit,
     locateCurrentPosition: suspend () -> City? = { null },
+    onRelocateCurrentLocation: () -> Unit = {},
 ) {
     var now by remember { mutableStateOf(Instant.now()) }
     // 世界时钟只需要分钟级精度，30 秒一跳足够新鲜又不至于每秒重排一整屏列表。
@@ -142,6 +143,7 @@ fun WorldPage(
                             weather = weatherByCity[city.name],
                             onSelect = { onSelectCity(city) },
                             onSetHome = { onSetHome(city) },
+                            onRelocate = if (city.name == CURRENT_LOCATION_CITY_NAME) onRelocateCurrentLocation else null,
                             rowModifier = Modifier.onGloballyPositioned { c ->
                                 debugLog("WorldLayout") {
                                     "row city=${city.name} h=${c.size.height} y=${c.positionInRoot().y}"
@@ -194,6 +196,7 @@ private fun WorldClockRow(
     weather: WeatherSnapshot?,
     onSelect: () -> Unit,
     onSetHome: () -> Unit,
+    onRelocate: (() -> Unit)? = null,
     rowModifier: Modifier = Modifier,
 ) {
     val scheme = PicoTheme.colorScheme
@@ -230,7 +233,9 @@ private fun WorldClockRow(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        city.name,
+                        // "当前位置"条目额外带一段真实城市名副文本，如"当前位置 · 上海"；
+                        // 内置城市 displayName 恒为 null，文案不变。
+                        city.displayName?.let { "${city.name} · $it" } ?: city.name,
                         style = typo.bodyLarge,
                         color = scheme.labelPrimary,
                         maxLines = 1,
@@ -265,6 +270,13 @@ private fun WorldClockRow(
                     } else {
                         Link(onClick = onSetHome) {
                             Text("设为本地", style = typo.labelSmall)
+                        }
+                    }
+                    // 只有"当前位置"这一行会传非 null 的 onRelocate（WorldPage 按 city.name 判断）——
+                    // 内置城市经纬度永远不变，没有"重新定位"的意义。
+                    if (onRelocate != null) {
+                        Link(onClick = onRelocate) {
+                            Text("重新定位", style = typo.labelSmall)
                         }
                     }
                 }
