@@ -3,11 +3,14 @@ package tech.illusion.spaceclock.location
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 /**
  * 只测 JSON -> [IpLocation] 的纯映射函数 [parseIpLocation]，不发真实网络请求——
  * 跟 `WeatherRepositoryTest` 只测 `beaufortScale` 纯函数的现状一致。
  */
+@RunWith(RobolectricTestRunner::class)
 class LocationRepositoryTest {
     @Test fun `parses a well-formed ipapi response`() {
         val json = """

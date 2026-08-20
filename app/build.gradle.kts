@@ -60,6 +60,7 @@ dependencies {
     // rememberLauncherForActivityResult / ActivityResultContracts 都在这个构件里。
     implementation(libs.androidx.activity.compose)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.ui.tooling.preview)
