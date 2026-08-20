@@ -2,6 +2,7 @@ package tech.illusion.spaceclock.store
 
 import android.content.Context
 import java.time.LocalDate
+import java.time.ZoneId
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.parseAlarms
 import tech.illusion.spaceclock.alarm.serializeAlarms
@@ -171,9 +172,11 @@ internal fun parseCurrentLocationCity(raw: String?): City? {
     val parts = raw.split(CURRENT_LOCATION_FIELD_SEP.toString())
     if (parts.size != 5) return null
     return runCatching {
+        val zoneId = parts[1]
+        require(zoneId in ZoneId.getAvailableZoneIds())
         City(
             name = parts[0],
-            zoneId = parts[1],
+            zoneId = zoneId,
             lat = parts[2].toFloat(),
             lon = parts[3].toFloat(),
             displayName = parts[4].ifEmpty { null },

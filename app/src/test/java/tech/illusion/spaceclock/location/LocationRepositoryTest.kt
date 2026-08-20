@@ -45,4 +45,18 @@ class LocationRepositoryTest {
         val json = """{"city":"Shanghai","latitude":"not-a-number","longitude":121.4737,"timezone":"Asia/Shanghai"}"""
         assertNull(parseIpLocation(json))
     }
+
+    @Test fun `invalid timezone id returns null`() {
+        val json = """
+            {"city":"Shanghai","latitude":31.2304,"longitude":121.4737,"timezone":"Not/A/Real/Zone"}
+        """.trimIndent()
+        assertNull(parseIpLocation(json))
+    }
+
+    @Test fun `out-of-range latitude returns null`() {
+        val json = """
+            {"city":"Shanghai","latitude":200.0,"longitude":121.4737,"timezone":"Asia/Shanghai"}
+        """.trimIndent()
+        assertNull(parseIpLocation(json))
+    }
 }

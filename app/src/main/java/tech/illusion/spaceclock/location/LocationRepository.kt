@@ -3,6 +3,7 @@ package tech.illusion.spaceclock.location
 import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
+import java.time.ZoneId
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -55,10 +56,13 @@ class LocationRepository(private val io: CoroutineDispatcher = Dispatchers.IO) {
 internal fun parseIpLocation(body: String): IpLocation? = runCatching {
     val json = JSONObject(body)
     if (json.optBoolean("error", false)) return@runCatching null
-    IpLocation(
-        cityName = json.getString("city"),
-        zoneId = json.getString("timezone"),
-        lat = json.getDouble("latitude").toFloat(),
-        lon = json.getDouble("longitude").toFloat(),
-    )
+    val cityName = json.getString("city")
+    val zoneId = json.getString("timezone")
+    val lat = json.getDouble("latitude")
+    val lon = json.getDouble("longitude")
+    if (cityName.isBlank()) return@runCatching null
+    if (zoneId !in ZoneId.getAvailableZoneIds()) return@runCatching null
+    if (!lat.isFinite() || lat !in -90.0..90.0) return@runCatching null
+    if (!lon.isFinite() || lon !in -180.0..180.0) return@runCatching null
+    IpLocation(cityName = cityName, zoneId = zoneId, lat = lat.toFloat(), lon = lon.toFloat())
 }.getOrNull()

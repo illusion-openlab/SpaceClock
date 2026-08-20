@@ -27,4 +27,10 @@ class ClockStoreSerializationTest {
     @Test fun `parsing a non-numeric lat returns null`() {
         assertNull(parseCurrentLocationCity("当前位置Asia/Shanghainot-a-number121.47上海"))
     }
+
+    @Test fun `parsing an invalid zoneId returns null`() {
+        val sep = ""
+        val raw = listOf("当前位置", "Not/A/Zone", "31.23", "121.47", "上海").joinToString(sep)
+        assertNull(parseCurrentLocationCity(raw))
+    }
 }
