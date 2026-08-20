@@ -304,7 +304,11 @@ fun ClockVolume() {
                             focusedCityName = focusedCity?.name,
                             weatherByCity = weatherByCity,
                             onAddCity = { city ->
-                                val updated = selectedCityNames + city.name
+                                val updated = if (city.name in selectedCityNames) {
+                                    selectedCityNames
+                                } else {
+                                    selectedCityNames + city.name
+                                }
                                 store.selectedCityNames = updated
                                 selectedCityNames = updated
                             },
