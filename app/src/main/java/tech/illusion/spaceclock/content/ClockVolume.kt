@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.pico.spatial.ui.design.PicoTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.nextTriggerAt
 import tech.illusion.spaceclock.content.pages.AlarmPage
@@ -43,11 +45,13 @@ import tech.illusion.spaceclock.content.pages.HomePage
 import tech.illusion.spaceclock.content.pages.TimerPage
 import tech.illusion.spaceclock.content.pages.WorldPage
 import tech.illusion.spaceclock.content.pages.formatMinSec
+import tech.illusion.spaceclock.location.LocationRepository
 import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.platform.rememberNotificationPermission
 import tech.illusion.spaceclock.store.ClockStore
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
+import tech.illusion.spaceclock.time.CURRENT_LOCATION_CITY_NAME
 import tech.illusion.spaceclock.timing.Phase
 import tech.illusion.spaceclock.timing.PomodoroState
 import tech.illusion.spaceclock.timing.TimerState
@@ -87,11 +91,43 @@ fun ClockVolume() {
     // 持久层；后续变更走下面 onAddCity/onSetHome 的回调，既更新这份内存态触发重组，也立刻写盘。
     var selectedCityNames by remember { mutableStateOf(store.selectedCityNames) }
     var homeCityName by remember { mutableStateOf(store.homeCityName) }
-    val selectedCities = remember(selectedCityNames) {
-        selectedCityNames.mapNotNull { name -> BUILTIN_CITIES.find { it.name == name } }
+    // IP 定位合成的"当前位置"城市不在 BUILTIN_CITIES 里，selectedCityNames 命中这个特殊名字时
+    // 改从这份状态取，其余名字仍然只认固定表——两条来源互不干扰。
+    var currentLocationCity by remember { mutableStateOf(store.currentLocationCity) }
+    val selectedCities = remember(selectedCityNames, currentLocationCity) {
+        selectedCityNames.mapNotNull { name ->
+            if (name == CURRENT_LOCATION_CITY_NAME) currentLocationCity
+            else BUILTIN_CITIES.find { it.name == name }
+        }
     }
     // 点选中的城市：驱动地球把它转到正面，同时给列表行做高亮。
     var focusedCity by remember { mutableStateOf<City?>(null) }
+
+    // 定位（本设计）：跟 weatherRepository 同样的"外部 IO 入口集中在这一层"理由，只持有一份实例。
+    // 不做自动/周期性定位——只在用户点"使用当前位置"/"重新定位"时才发起一次网络请求。
+    val locationRepository = remember { LocationRepository() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // 定位成功后落盘 + 更新内存态；两个 UI 入口（CityPicker 的"使用当前位置"、
+    // WorldClockRow 的"重新定位"）共用这一份逻辑，只是触发方式不同（前者要把结果交给
+    // onAddCity 加入城市列表，后者只是原地覆盖坐标，城市列表本来就已经包含它）。
+    val locateCurrentPosition: suspend () -> City? = {
+        locationRepository.locate()?.let { located ->
+            City(
+                name = CURRENT_LOCATION_CITY_NAME,
+                zoneId = located.zoneId,
+                lat = located.lat,
+                lon = located.lon,
+                displayName = located.cityName,
+            ).also { city ->
+                store.currentLocationCity = city
+                currentLocationCity = city
+            }
+        }
+    }
+    val onRelocateCurrentLocation: () -> Unit = {
+        coroutineScope.launch { locateCurrentPosition() }
+    }
 
     // 天气（Task 9）：仓库只在这一层持有一份实例（和 ClockStore 同样的"持久化/外部 IO 入口集中"
     // 理由），四个消费点（HomePage/WorldPage/AlarmCard/状态副行）都读同一份 weatherByCity 快照，
@@ -277,6 +313,8 @@ fun ClockVolume() {
                                 homeCityName = city.name
                             },
                             onSelectCity = { focusedCity = it },
+                            locateCurrentPosition = locateCurrentPosition,
+                            onRelocateCurrentLocation = onRelocateCurrentLocation,
                         )
                         ClockPage.ALARM -> AlarmPage(
                             alarms = alarms,
