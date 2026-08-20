@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,10 +38,12 @@ import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.ScrollIndicator
 import com.pico.spatial.ui.design.Text
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import tech.illusion.spaceclock.platform.debugLog
 import tech.illusion.spaceclock.theme.TABULAR_FIGURES
 import tech.illusion.spaceclock.time.BUILTIN_CITIES
 import tech.illusion.spaceclock.time.City
+import tech.illusion.spaceclock.time.CURRENT_LOCATION_CITY_NAME
 import tech.illusion.spaceclock.time.localTimeIn
 import tech.illusion.spaceclock.time.offsetLabel
 import tech.illusion.spaceclock.weather.WeatherSnapshot
@@ -73,6 +76,7 @@ fun WorldPage(
     onAddCity: (City) -> Unit,
     onSetHome: (City) -> Unit,
     onSelectCity: (City) -> Unit,
+    locateCurrentPosition: suspend () -> City? = { null },
 ) {
     var now by remember { mutableStateOf(Instant.now()) }
     // 世界时钟只需要分钟级精度，30 秒一跳足够新鲜又不至于每秒重排一整屏列表。
@@ -95,6 +99,7 @@ fun WorldPage(
                 showPicker = false
             },
             onCancel = { showPicker = false },
+            locateCurrentPosition = locateCurrentPosition,
         )
         return
     }
@@ -269,14 +274,24 @@ private fun WorldClockRow(
 }
 
 /**
- * 同页内的城市选择子视图（不开新窗口）——从 [BUILTIN_CITIES] 里挑一个还没加过的城市。
- * 挑中后立刻返回主列表；已全部添加则给出说明文案而不是空白列表。
+ * 同页内的城市选择子视图（不开新窗口）——从 [BUILTIN_CITIES] 里挑一个还没加过的城市，
+ * 或者用 [locateCurrentPosition] 联网定位出一座"当前位置"（[CURRENT_LOCATION_CITY_NAME]）。
+ * 挑中/定位成功后立刻返回主列表；已全部添加则给出说明文案而不是空白列表。
  */
 @Composable
-private fun CityPicker(alreadyAdded: Set<String>, onPick: (City) -> Unit, onCancel: () -> Unit) {
+private fun CityPicker(
+    alreadyAdded: Set<String>,
+    onPick: (City) -> Unit,
+    onCancel: () -> Unit,
+    locateCurrentPosition: suspend () -> City?,
+) {
     val scheme = PicoTheme.colorScheme
     val typo = PicoTheme.typography
     val available = remember(alreadyAdded) { BUILTIN_CITIES.filter { it.name !in alreadyAdded } }
+    val showCurrentLocationOption = CURRENT_LOCATION_CITY_NAME !in alreadyAdded
+    var locating by remember { mutableStateOf(false) }
+    var locateFailed by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -284,6 +299,36 @@ private fun CityPicker(alreadyAdded: Set<String>, onPick: (City) -> Unit, onCanc
             Link(onClick = onCancel) { Text("取消") }
         }
         Spacer(Modifier.height(8.dp))
+
+        if (showCurrentLocationOption) {
+            ListItem(
+                modifier = Modifier.fillMaxWidth().clickable(enabled = !locating) {
+                    locating = true
+                    locateFailed = false
+                    coroutineScope.launch {
+                        val city = locateCurrentPosition()
+                        locating = false
+                        if (city != null) onPick(city) else locateFailed = true
+                    }
+                },
+                headlineContent = {
+                    Text(
+                        if (locating) "定位中…" else "使用当前位置",
+                        style = typo.bodyLarge,
+                        color = scheme.labelPrimary,
+                    )
+                },
+                supportingContent = {
+                    val subtitle = when {
+                        locating -> "正在通过网络定位…"
+                        locateFailed -> "定位失败，请检查网络后重试"
+                        else -> "根据网络 IP 推测所在城市，不使用设备定位权限"
+                    }
+                    Text(subtitle, style = typo.bodySmall, color = scheme.labelTertiary)
+                },
+            )
+            HorizontalDivider(color = scheme.dividerLine)
+        }
 
         if (available.isEmpty()) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
