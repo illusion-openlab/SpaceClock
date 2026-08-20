@@ -46,11 +46,16 @@ Task 1 把它实现成了「面板 `fillMaxHeight()` + 按钮条 `align(BottomCe
 
 ```bash
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-./gradlew :app:testDebugUnitTest      # 当前基线 89 个全绿
+./gradlew :app:testDebugUnitTest      # 当前基线 105 个全绿
 ./gradlew :app:assembleDebug
 ```
 
 `JAVA_HOME` / `PICO_HOME` **不跨 Bash 调用持续**，每条命令自己 export。
+
+**已知坑：单测里碰 `org.json.JSONObject` 必须标 `@RunWith(RobolectricTestRunner::class)`。**
+纯 JUnit 下 Android SDK 是 mock jar，`org.json` 的访问器方法会抛
+`RuntimeException("Method X not mocked")`；current-location-weather 功能 Task 2 踩过这个坑，
+`LocationRepositoryTest` 由此加了这个注解，改的时候别删掉。
 
 设备验证（门禁 B：锁内装机→启动→截图→停应用→释放锁；**分析全在锁外**）：
 
@@ -109,7 +114,9 @@ round 1 实测：文件写入时间比目标 UI 出现晚 6 秒，画面里还�
   `speak()` 可能静默失败。**不要凭直觉把语音加回来。**
 - Full Space / `Stage` 沉浸场景
 - 第二个 `WindowContainer` / `Augment` 伴生工具栏（V1 少一个 API 未知项）
-- 定位权限自动识别城市（天气城市一律手动选）
+- 设备定位权限自动识别城市（仍然不申请 Android 定位权限；2026-08-20 加了不需要权限的 IP 地理定位
+  "使用当前位置"选项，作为一个可选的、用户主动触发的城市来源，天气城市列表整体仍是用户手动管理，
+  见 `docs/superpowers/specs/2026-08-20-current-location-weather-design.md`）
 - 逐小时天气预报
 - 闹钟铃声选择（V1 单一提示音）
 - 番茄钟历史统计 / 周月图表 / 任务标签
