@@ -7,8 +7,11 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * 只测 JSON -> [IpLocation] 的纯映射函数 [parseIpLocation]，不发真实网络请求——
- * 跟 `WeatherRepositoryTest` 只测 `beaufortScale` 纯函数的现状一致。
+ * 测 JSON -> [IpLocation] 的纯映射函数 [parseIpLocation]，不发真实网络请求。跟
+ * `WeatherRepositoryTest` 不同：那边只测 `beaufortScale` 纯函数，不碰任何 Android API；
+ * 这里的 [parseIpLocation] 用到 `org.json.JSONObject`，它在纯 JUnit 下（没有 Robolectric）
+ * 会抛 `RuntimeException("Method X not mocked")`。这个类必须标 @RunWith(RobolectricTestRunner::class)
+ * 才能让 org.json 在测试里真正跑起来——不能删掉这个注解。
  */
 @RunWith(RobolectricTestRunner::class)
 class LocationRepositoryTest {
