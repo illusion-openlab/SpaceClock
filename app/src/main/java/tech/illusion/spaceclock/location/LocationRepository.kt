@@ -10,7 +10,14 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 private const val TAG = "LocationRepository"
-private const val IP_GEOLOCATION_URL = "https://ipapi.co/json/"
+
+/**
+ * 2026-08-21：原来用 ipapi.co，上线后在宿主机 curl、模拟器、真机三处都实测到它返回
+ * `{"reason":"RateLimited","error":true}`（免费额度用完，不是网络抖动，`curl` 直接确认过
+ * 响应体）。换成同形状的 HTTPS 免密钥服务 geojs.io——这是设计文档早就预留的退路（"替换成
+ * 另一个 HTTPS 免密钥服务即是纯 LocationRepository 内部实现细节，不影响本设计其余部分"）。
+ */
+private const val IP_GEOLOCATION_URL = "https://get.geojs.io/v1/ip/geo.json"
 
 /** 一次 IP 地理定位的结果。[zoneId] 是 IANA 时区 id（如 "Asia/Shanghai"），来自服务方解析。 */
 data class IpLocation(val cityName: String, val zoneId: String, val lat: Float, val lon: Float)
@@ -49,17 +56,18 @@ class LocationRepository(private val io: CoroutineDispatcher = Dispatchers.IO) {
 }
 
 /**
- * ipapi.co 的响应体 -> [IpLocation]。字段缺失、类型不对、服务返回错误体
- * （限流/出错时的 `"error": true`）都收敛成 null，不抛异常——供 [LocationRepository.fetch]
- * 直接用，也供单元测试直接喂样例 JSON，不用真的发网络请求。
+ * geojs.io 的响应体 -> [IpLocation]。实测响应把 `latitude`/`longitude` 编码成 JSON 字符串
+ * （如 `"35.6893"`），不是 JSON number——用 `getString(...).toDouble()` 显式转换，不依赖
+ * `org.json` 对字符串数值的隐式类型转换。字段缺失、时区不合法、经纬度超出范围都收敛成 null，
+ * 不抛异常——供 [LocationRepository.fetch] 直接用，也供单元测试直接喂样例 JSON，不用真的发
+ * 网络请求。
  */
 internal fun parseIpLocation(body: String): IpLocation? = runCatching {
     val json = JSONObject(body)
-    if (json.optBoolean("error", false)) return@runCatching null
     val cityName = json.getString("city")
     val zoneId = json.getString("timezone")
-    val lat = json.getDouble("latitude")
-    val lon = json.getDouble("longitude")
+    val lat = json.getString("latitude").toDouble()
+    val lon = json.getString("longitude").toDouble()
     if (cityName.isBlank()) return@runCatching null
     if (zoneId !in ZoneId.getAvailableZoneIds()) return@runCatching null
     if (!lat.isFinite() || lat !in -90.0..90.0) return@runCatching null

@@ -12,28 +12,32 @@ import org.robolectric.RobolectricTestRunner
  * 这里的 [parseIpLocation] 用到 `org.json.JSONObject`，它在纯 JUnit 下（没有 Robolectric）
  * 会抛 `RuntimeException("Method X not mocked")`。这个类必须标 @RunWith(RobolectricTestRunner::class)
  * 才能让 org.json 在测试里真正跑起来——不能删掉这个注解。
+ *
+ * 样例 JSON 用的是 geojs.io 的真实响应形状（2026-08-21 从 ipapi.co 换过来后实测确认）：
+ * `latitude`/`longitude` 是 JSON 字符串，不是 number。
  */
 @RunWith(RobolectricTestRunner::class)
 class LocationRepositoryTest {
-    @Test fun `parses a well-formed ipapi response`() {
+    @Test fun `parses a well-formed geojs response`() {
         val json = """
-            {"ip":"1.2.3.4","city":"Shanghai","region":"Shanghai","country_name":"China",
-             "latitude":31.2304,"longitude":121.4737,"timezone":"Asia/Shanghai"}
+            {"accuracy":20,"area_code":"0","asn":38136,"city":"Tokyo","continent_code":"AS",
+             "country":"Japan","country_code":"JP","ip":"185.220.238.43","latitude":"35.6893",
+             "longitude":"139.6899","organization_name":"Akari Networks","region":"Tokyo",
+             "timezone":"Asia/Tokyo"}
         """.trimIndent()
         assertEquals(
-            IpLocation(cityName = "Shanghai", zoneId = "Asia/Shanghai", lat = 31.2304f, lon = 121.4737f),
+            IpLocation(cityName = "Tokyo", zoneId = "Asia/Tokyo", lat = 35.6893f, lon = 139.6899f),
             parseIpLocation(json),
         )
     }
 
     @Test fun `missing city field returns null`() {
-        val json = """{"latitude":31.2304,"longitude":121.4737,"timezone":"Asia/Shanghai"}"""
+        val json = """{"latitude":"31.2304","longitude":"121.4737","timezone":"Asia/Shanghai"}"""
         assertNull(parseIpLocation(json))
     }
 
-    @Test fun `error response returns null`() {
-        // ipapi.co 限流/出错时返回 {"error": true, "reason": "...", "message": "..."}，没有城市字段。
-        val json = """{"error":true,"reason":"RateLimited","message":"Too many requests"}"""
+    @Test fun `missing timezone field returns null`() {
+        val json = """{"city":"Shanghai","latitude":"31.2304","longitude":"121.4737"}"""
         assertNull(parseIpLocation(json))
     }
 
@@ -41,21 +45,21 @@ class LocationRepositoryTest {
         assertNull(parseIpLocation("not json"))
     }
 
-    @Test fun `wrong field type returns null`() {
-        val json = """{"city":"Shanghai","latitude":"not-a-number","longitude":121.4737,"timezone":"Asia/Shanghai"}"""
+    @Test fun `non-numeric latitude string returns null`() {
+        val json = """{"city":"Shanghai","latitude":"not-a-number","longitude":"121.4737","timezone":"Asia/Shanghai"}"""
         assertNull(parseIpLocation(json))
     }
 
     @Test fun `invalid timezone id returns null`() {
         val json = """
-            {"city":"Shanghai","latitude":31.2304,"longitude":121.4737,"timezone":"Not/A/Real/Zone"}
+            {"city":"Shanghai","latitude":"31.2304","longitude":"121.4737","timezone":"Not/A/Real/Zone"}
         """.trimIndent()
         assertNull(parseIpLocation(json))
     }
 
     @Test fun `out-of-range latitude returns null`() {
         val json = """
-            {"city":"Shanghai","latitude":200.0,"longitude":121.4737,"timezone":"Asia/Shanghai"}
+            {"city":"Shanghai","latitude":"200.0","longitude":"121.4737","timezone":"Asia/Shanghai"}
         """.trimIndent()
         assertNull(parseIpLocation(json))
     }
