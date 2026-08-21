@@ -19,6 +19,15 @@ private const val TAG = "LocationRepository"
  */
 private const val IP_GEOLOCATION_URL = "https://get.geojs.io/v1/ip/geo.json"
 
+/**
+ * 2026-08-21：geojs.io 不支持本地化，`city` 字段永远是英文/拼音（如 "Shenzhen"）——用
+ * BigDataCloud 的免费、免密钥反向地理编码接口，拿 geojs.io 已经给出的经纬度去查一次中文城市名
+ * （`localityLanguage=zh`）。这个接口只接受经纬度作为输入，不能替代 geojs.io 做 IP 定位，
+ * 所以是两次请求串联，不是二选一。查不到/查失败时退回 geojs.io 原本的英文/拼音名，不让整次
+ * 定位因为这一步失败。
+ */
+private const val REVERSE_GEOCODE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client"
+
 /** 一次 IP 地理定位的结果。[zoneId] 是 IANA 时区 id（如 "Asia/Shanghai"），来自服务方解析。 */
 data class IpLocation(val cityName: String, val zoneId: String, val lat: Float, val lon: Float)
 
@@ -37,21 +46,38 @@ class LocationRepository(private val io: CoroutineDispatcher = Dispatchers.IO) {
     }
 
     private fun fetch(): IpLocation? {
-        val connection = (URL(IP_GEOLOCATION_URL).openConnection() as HttpURLConnection).apply {
+        val located = fetchIpLocation() ?: return null
+        // 反向地理编码失败/查不到中文名都不影响主结果——退回 geojs.io 原本的英文/拼音名，
+        // 不能因为这一步的失败让整次定位（经纬度/时区）也跟着报废。
+        val chineseName = runCatching { fetchChineseCityName(located.lat, located.lon) }.getOrNull()
+        return if (chineseName != null) located.copy(cityName = chineseName) else located
+    }
+
+    private fun fetchIpLocation(): IpLocation? {
+        val body = httpGet(IP_GEOLOCATION_URL) ?: return null
+        return parseIpLocation(body)
+    }
+
+    private fun fetchChineseCityName(lat: Float, lon: Float): String? {
+        val url = "$REVERSE_GEOCODE_URL?latitude=$lat&longitude=$lon&localityLanguage=zh"
+        val body = httpGet(url) ?: return null
+        return parseChineseCityName(body)
+    }
+
+    private fun httpGet(url: String): String? {
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 8_000
             readTimeout = 8_000
         }
-        val body: String
         try {
             val statusCode = connection.responseCode
-            Log.i(TAG, "HTTP-STATUS code=$statusCode")
+            Log.i(TAG, "HTTP-STATUS code=$statusCode url=$url")
             if (statusCode != HttpURLConnection.HTTP_OK) return null
-            body = connection.inputStream.bufferedReader().use { it.readText() }
+            return connection.inputStream.bufferedReader().use { it.readText() }
         } finally {
             connection.disconnect()
         }
-        return parseIpLocation(body)
     }
 }
 
@@ -59,8 +85,8 @@ class LocationRepository(private val io: CoroutineDispatcher = Dispatchers.IO) {
  * geojs.io 的响应体 -> [IpLocation]。实测响应把 `latitude`/`longitude` 编码成 JSON 字符串
  * （如 `"35.6893"`），不是 JSON number——用 `getString(...).toDouble()` 显式转换，不依赖
  * `org.json` 对字符串数值的隐式类型转换。字段缺失、时区不合法、经纬度超出范围都收敛成 null，
- * 不抛异常——供 [LocationRepository.fetch] 直接用，也供单元测试直接喂样例 JSON，不用真的发
- * 网络请求。
+ * 不抛异常——供 [LocationRepository.fetchIpLocation] 直接用，也供单元测试直接喂样例 JSON，
+ * 不用真的发网络请求。
  */
 internal fun parseIpLocation(body: String): IpLocation? = runCatching {
     val json = JSONObject(body)
@@ -73,4 +99,15 @@ internal fun parseIpLocation(body: String): IpLocation? = runCatching {
     if (!lat.isFinite() || lat !in -90.0..90.0) return@runCatching null
     if (!lon.isFinite() || lon !in -180.0..180.0) return@runCatching null
     IpLocation(cityName = cityName, zoneId = zoneId, lat = lat.toFloat(), lon = lon.toFloat())
+}.getOrNull()
+
+/**
+ * BigDataCloud 反向地理编码响应体 -> 中文城市名。只取顶层 `city` 字段，空字符串/字段缺失/
+ * JSON 解析失败都收敛成 null（不当作可用结果）——供 [LocationRepository.fetchChineseCityName]
+ * 直接用，也供单元测试直接喂样例 JSON。
+ */
+internal fun parseChineseCityName(body: String): String? = runCatching {
+    val json = JSONObject(body)
+    val city = json.getString("city")
+    city.ifBlank { null }
 }.getOrNull()

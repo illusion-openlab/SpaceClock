@@ -63,4 +63,26 @@ class LocationRepositoryTest {
         """.trimIndent()
         assertNull(parseIpLocation(json))
     }
+
+    @Test fun `parses a well-formed BigDataCloud reverse-geocode response`() {
+        val json = """
+            {"latitude":22.5431,"longitude":114.0579,"countryName":"中华人民共和国","countryCode":"CN",
+             "principalSubdivision":"广东省","city":"深圳市","locality":"福田区"}
+        """.trimIndent()
+        assertEquals("深圳市", parseChineseCityName(json))
+    }
+
+    @Test fun `missing city field in reverse-geocode response returns null`() {
+        val json = """{"latitude":22.5431,"longitude":114.0579,"countryName":"中华人民共和国"}"""
+        assertNull(parseChineseCityName(json))
+    }
+
+    @Test fun `blank city field in reverse-geocode response returns null`() {
+        val json = """{"latitude":22.5431,"longitude":114.0579,"city":""}"""
+        assertNull(parseChineseCityName(json))
+    }
+
+    @Test fun `malformed reverse-geocode json returns null`() {
+        assertNull(parseChineseCityName("not json"))
+    }
 }
