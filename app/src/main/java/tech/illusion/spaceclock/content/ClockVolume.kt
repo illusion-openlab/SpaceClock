@@ -103,10 +103,14 @@ fun ClockVolume() {
     // 点选中的城市：驱动地球把它转到正面，同时给列表行做高亮。
     var focusedCity by remember { mutableStateOf<City?>(null) }
 
-    // 定位（本设计）：跟 weatherRepository 同样的"外部 IO 入口集中在这一层"理由，只持有一份实例。
-    // 不做自动/周期性定位——只在用户点"使用当前位置"/"重新定位"时才发起一次网络请求。
+    // 定位：跟 weatherRepository 同样的"外部 IO 入口集中在这一层"理由，只持有一份实例。
     val locationRepository = remember { LocationRepository() }
     val coroutineScope = rememberCoroutineScope()
+    // 是否正在定位（2026-08-21 设计文档）：纯内存状态，不落盘——每次启动天然重置，配合下面的
+    // 启动 LaunchedEffect(Unit) 直接实现"每次启动都重新定位一次"，不用额外记"上次定位时间"。
+    // 三个触发点（启动自动定位、WorldClockRow 的"重新定位"、HomePage 的"重定位"）共用这一份状态
+    // 和下面同一个 locateCurrentPosition，不重复实现。
+    var homeLocating by remember { mutableStateOf(false) }
 
     // 定位成功后落盘 + 更新内存态；两个 UI 入口（CityPicker 的"使用当前位置"、
     // WorldClockRow 的"重新定位"）共用这一份逻辑，只是触发方式不同（前者要把结果交给
@@ -126,7 +130,27 @@ fun ClockVolume() {
         }
     }
     val onRelocateCurrentLocation: () -> Unit = {
-        coroutineScope.launch { locateCurrentPosition() }
+        coroutineScope.launch {
+            homeLocating = true
+            locateCurrentPosition()
+            homeLocating = false
+        }
+    }
+
+    // 当前位置是当前生效的本地城市时（不管是默认值，还是用户之前手动选的），每次进程启动都在
+    // 后台重新定位一次，让首页数据保持新鲜（2026-08-21 设计文档）。手动选了别的城市完全不进
+    // 这个分支，跟现有"只在相关时才联网"的原则一致，不会给这批用户增加请求。
+    LaunchedEffect(Unit) {
+        if (homeCityName == CURRENT_LOCATION_CITY_NAME) {
+            if (CURRENT_LOCATION_CITY_NAME !in selectedCityNames) {
+                val updated = selectedCityNames + CURRENT_LOCATION_CITY_NAME
+                store.selectedCityNames = updated
+                selectedCityNames = updated
+            }
+            homeLocating = true
+            locateCurrentPosition()
+            homeLocating = false
+        }
     }
 
     // 天气（Task 9）：仓库只在这一层持有一份实例（和 ClockStore 同样的"持久化/外部 IO 入口集中"
@@ -297,6 +321,10 @@ fun ClockVolume() {
                         ClockPage.HOME -> HomePage(
                             weather = weatherByCity[homeCityName],
                             cityName = homeCityName,
+                            isCurrentLocation = homeCityName == CURRENT_LOCATION_CITY_NAME,
+                            displayName = currentLocationCity?.displayName,
+                            isLocating = homeLocating,
+                            onRelocate = onRelocateCurrentLocation,
                         )
                         ClockPage.WORLD -> WorldPage(
                             cities = selectedCities,
