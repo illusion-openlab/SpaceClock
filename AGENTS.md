@@ -46,7 +46,7 @@ Task 1 把它实现成了「面板 `fillMaxHeight()` + 按钮条 `align(BottomCe
 
 ```bash
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-./gradlew :app:testDebugUnitTest      # 当前基线 105 个全绿
+./gradlew :app:testDebugUnitTest      # 当前基线 109 个全绿
 ./gradlew :app:assembleDebug
 ```
 
