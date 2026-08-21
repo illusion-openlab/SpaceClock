@@ -6,6 +6,7 @@ import java.time.ZoneId
 import tech.illusion.spaceclock.alarm.Alarm
 import tech.illusion.spaceclock.alarm.parseAlarms
 import tech.illusion.spaceclock.alarm.serializeAlarms
+import tech.illusion.spaceclock.time.CURRENT_LOCATION_CITY_NAME
 import tech.illusion.spaceclock.time.City
 import tech.illusion.spaceclock.timing.PomodoroConfig
 
@@ -30,11 +31,14 @@ class ClockStore(context: Context) {
     /**
      * 本地城市名。决定时钟页天气卡与状态副行显示哪座城。
      *
-     * 为什么需要这个字段：V1 不申请定位权限（设计文档 §1），所以"本地"只能由用户指定。
-     * 默认北京；用户在世界时钟页用「设为本地」改。Task 2 曾临时用字面量 "本地" 占位，接上后要删掉。
+     * 默认值是 [CURRENT_LOCATION_CITY_NAME]（"当前位置"，2026-08-21 设计文档）——这只在
+     * `SharedPreferences` 的 `KEY_HOME_CITY` 键从未被写过时生效。写入只发生在用户点「设为本地」
+     * 的那一刻：一旦写过（哪怕手动选的还是"当前位置"），这次选择永久优先于默认值，不会被
+     * 后续的自动定位悄悄覆盖。V1 阶段这里默认过北京、不申请定位权限；现在默认值换成当前位置，
+     * 但依然不申请 Android 定位权限——走的是已有的 IP 地理定位（`LocationRepository`）。
      */
     var homeCityName: String
-        get() = prefs.getString(KEY_HOME_CITY, "北京")!!
+        get() = prefs.getString(KEY_HOME_CITY, CURRENT_LOCATION_CITY_NAME)!!
         set(value) = prefs.edit().putString(KEY_HOME_CITY, value).apply()
 
     var selectedCityNames: List<String>
